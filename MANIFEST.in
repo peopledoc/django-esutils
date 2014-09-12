@@ -1,0 +1,4 @@
+recursive-include novaauth *
+global-exclude *.pyc .*.swp
+include *.txt
+include AUTHORS CHANGELOG README.rst VERSION

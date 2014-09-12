@@ -1,0 +1,40 @@
+Install
+=======
+
+Get the Code
+------------
+
+.. code:: python
+
+    me@local:~$ cd ~/src
+    me@local:~/src$ git clone git@github.com:novapost/django-esutils.git
+
+
+Demo
+----
+
+.. code:: python
+
+    me@local:~$ mkvirtualenv esutils
+    (esutils)me@local:~/src/esutils$ make install-demo
+    (esutils)me@local:~/src/esutils$ make demo
+
+
+Test
+----
+
+.. code:: python
+
+    me@local:~$ mkvirtualenv esutils
+    (esutils)me@local:~/src/esutils$ make install-test
+    (esutils)me@local:~/src/esutils$ make test
+
+
+Doc
+---
+
+.. code:: python
+
+    me@local:~$ mkvirtualenv esutils
+    (esutils)me@local:~/src/esutils$ make install-doc
+    (esutils)me@local:~/src/esutils$ make doc

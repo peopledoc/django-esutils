@@ -1,0 +1,5 @@
+*~
+*.egg*
+*.db
+*.pyc
+docs/_build/
