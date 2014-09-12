@@ -15,7 +15,7 @@ REQUIREMENTS = ['django-esutils']
 ENTRY_POINTS = {
     'console_scripts': ['demo_esutils = demo_esutils.manage:main'],
 }
-AUTHOR = u'Novaspost'
+AUTHOR = u'Novapost'
 EMAIL = u'rd@novapost.net'
 URL = u'https://github.com/novapost/django-esutils'
 CLASSIFIERS = ['Development Status :: 3 - Alpha',
