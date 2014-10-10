@@ -27,7 +27,7 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    category = models.ForeignKey(Category)
+    category = models.ForeignKey(Category, blank=True, null=True)
 
     subject = models.CharField(max_length=256)
     content = models.TextField(blank=True, default='')

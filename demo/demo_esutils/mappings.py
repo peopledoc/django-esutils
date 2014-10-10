@@ -9,10 +9,7 @@ from demo_esutils.models import Article
 
 ARTICLE_MAPPING = {
     # author
-    'author__first_name': {
-        'type': 'string',
-    },
-    'author__last_name': {
+    'author__username': {
         'type': 'string',
     },
     'author__email': {
