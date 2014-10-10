@@ -9,7 +9,7 @@ install-test:
 
 test:
 	flake8 django_esutils
-	demo_esutils test django_esutils
+	demo_esutils test demo_esutils
 
 clean:
 	rm -f .coverage
