@@ -105,8 +105,6 @@ class SearchMappingType(MappingType, Indexable):
                 'settings': settings.ES_INDEX_SETTINGS,
                 'mappings': mappings,
             })
-            # refresh
-            # cls.refresh_index()
 
     @classmethod
     def update_mapping(cls, es=None, index=None, doc_type=None, mapping=None,
@@ -130,8 +128,10 @@ class SearchMappingType(MappingType, Indexable):
             doc_type: mapping
         }, index=index)
 
-        # refresh
-        # cls.refresh_index()
+    @classmethod
+    def es_index_all(cls):
+        ids = cls.get_model().objects.values_list(cls.id_field, flat=True)
+        tasks.index_objects.delay(cls, [i for i in ids], id_field=cls.id_field)
 
     @classmethod
     def es_index(cls, sender, instance, **kwargs):
