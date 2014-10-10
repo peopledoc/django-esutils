@@ -66,6 +66,53 @@ ES_INDEXES = {
 }
 
 ES_INDEX_SETTINGS = {
+    'index': {
+        'number_of_replicas': 1,
+        'number_of_shards': 1,
+        'analysis': {
+            'analyzer': {
+                'ngram_analyzer': {
+                    'type': 'custom',
+                    'filter': [
+                        'esutils_ngram'
+                    ],
+                    'tokenizer': 'lowercase'
+                },
+                'edgengram_analyzer': {
+                    'type': 'custom',
+                    'filter': [
+                        'esutils_edgengram'
+                    ],
+                    'tokenizer': 'lowercase'
+                }
+            },
+            'filter': {
+                'esutils_edgengram': {
+                    'type': 'edgeNGram',
+                    'min_gram': 2,
+                    'max_gram': 15
+                },
+                'esutils_ngram': {
+                    'min_gram': 3,
+                    'type': 'nGram',
+                    'max_gram': 15
+                }
+            },
+            'tokenizer': {
+                'esutils_ngram_tokenizer': {
+                    'min_gram': 3,
+                    'type': 'nGram',
+                    'max_gram': 15
+                },
+                'esutils_edgengram_tokenizer': {
+                    'max_gram': 15,
+                    'min_gram': 2,
+                    'type': 'edgeNGram',
+                    'side': 'front'
+                }
+            }
+        }
+    }
 }
 
 ES_DOC_TYPES = [
