@@ -1,5 +1,6 @@
 django-nose
 rednose
+-e git+ssh://git@github.com/novapost/elasticutils.git@es-1.2-temporary-usage#egg=elasticutils
 -e git+ssh://git@github.com/novapost/django-uuidfield.git#egg=django_uuidfield
 -e ./
 -e ./demo/
