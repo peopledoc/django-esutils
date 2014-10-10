@@ -51,8 +51,8 @@ ES_URLS = [
     'http://127.0.0.1:9200',
 ]
 # @see for additionals available kwargs:
-# - http://elasticsearch-py.readthedocs.org/en/master/connection.html#elasticsearch.Transport
-# - http://elasticsearch-py.readthedocs.org/en/master/connection.html#elasticsearch.Connection
+# - http://elasticsearch-py.readthedocs.org/en/master/connection.html#elasticsearch.Transport   # noqa
+# - http://elasticsearch-py.readthedocs.org/en/master/connection.html#elasticsearch.Connection  # noqa
 ELASTICSEARCH_KWARGS = {}
 
 ES_DISABLED = False
