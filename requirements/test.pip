@@ -1,5 +1,5 @@
 django-nose
 rednose
-
+-e git+ssh://git@github.com/novapost/django-uuidfield.git#egg=django_uuidfield
 -e ./
 -e ./demo/
