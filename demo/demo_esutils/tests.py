@@ -73,6 +73,18 @@ class MappingTestCase(TestCase):
         self.assertEqual(s_.query(category__name__term='tes').count(), 0)
         self.assertEqual(s_.query(category__name__term='tests').count(), 2)
 
+        # update some contents
+        Article.objects.filter(author=self.louise).update(subject='hey #tgif')
+
+        # reindex all
+        ArticleMappingType.es_index_all()
+        # refresh index
+        ArticleMappingType.refresh_index()
+
+        # should
+        self.assertEqual(s_.query(subject__prefix='amaz').count(), 0)
+        self.assertEqual(s_.query(subject__match='#tgif').count(), 1)
+
         for i, a in enumerate([article1, article2]):
             # remove an article
             a.delete()
