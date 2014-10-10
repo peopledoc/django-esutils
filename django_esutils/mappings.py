@@ -135,8 +135,10 @@ class SearchMappingType(MappingType, Indexable):
 
     @classmethod
     def es_index(cls, sender, instance, **kwargs):
-        tasks.index_objects.delay(cls, [instance.uuid], id_field=cls.id_field)
+        pk = getattr(instance, cls.id_field)
+        tasks.index_objects.delay(cls, [pk], id_field=cls.id_field)
 
     @classmethod
     def es_unindex(cls, sender, instance, **kwargs):
-        tasks.unindex_objects.delay(cls, [instance.uuid])
+        pk = getattr(instance, cls.id_field)
+        tasks.unindex_objects.delay(cls, [pk])
