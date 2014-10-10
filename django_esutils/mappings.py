@@ -75,12 +75,12 @@ class SearchMappingType(MappingType, Indexable):
             # ... or if is a 2 level key: {
             #     'author__first_name': obj.author.first_name,
             # }
-            doc[k] = getattr(obj, k_1)
-            if k_2:
-                doc[k] = getattr(doc[k], k_2)
+            doc[k] = getattr(obj, k_1, None)
+            if doc[k] and k_2:
+                doc[k] = getattr(doc[k], k_2, None)
 
             # ensure pk serialization
-            if k == cls.id_field:
+            if doc[k] and k == cls.id_field:
                 doc[k] = str(doc[k])
 
         return doc
