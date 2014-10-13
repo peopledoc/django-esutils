@@ -148,6 +148,12 @@ class SearchMappingType(MappingType, Indexable):
         cls.run_index([getattr(instance, cls.id_field)])
 
     @classmethod
+    def on_post_update(cls, sender, queryset, **kwargs):
+        """Indexes passed object when call from a model post_save signal.
+        """
+        cls.run_index(queryset.values_list(cls.id_field, flat=True))
+
+    @classmethod
     def on_post_delete(cls, sender, instance, **kwargs):
         """Unindexes passed object when call from a model post_delete signal.
         """
