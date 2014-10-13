@@ -129,16 +129,26 @@ class SearchMappingType(MappingType, Indexable):
         }, index=index)
 
     @classmethod
-    def es_index_all(cls):
-        ids = cls.get_model().objects.values_list(cls.id_field, flat=True)
-        tasks.index_objects.delay(cls, [i for i in ids], id_field=cls.id_field)
+    def run_index(cls, ids):
+        tasks.index_objects.delay(cls, ids, id_field=cls.id_field)
 
     @classmethod
-    def es_index(cls, sender, instance, **kwargs):
-        pk = getattr(instance, cls.id_field)
-        tasks.index_objects.delay(cls, [pk], id_field=cls.id_field)
+    def run_index_all(cls):
+        cls.run_index(cls.get_model().objects.values_list(cls.id_field,
+                                                          flat=True))
 
     @classmethod
-    def es_unindex(cls, sender, instance, **kwargs):
-        pk = getattr(instance, cls.id_field)
-        tasks.unindex_objects.delay(cls, [pk])
+    def run_unindex(cls, ids):
+        tasks.unindex_objects.delay(cls, ids)
+
+    @classmethod
+    def on_post_save(cls, sender, instance, **kwargs):
+        """Indexes passed object when call from a model post_save signal.
+        """
+        cls.run_index([getattr(instance, cls.id_field)])
+
+    @classmethod
+    def on_post_delete(cls, sender, instance, **kwargs):
+        """Unindexes passed object when call from a model post_delete signal.
+        """
+        cls.run_unindex([getattr(instance, cls.id_field)])
