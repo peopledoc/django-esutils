@@ -8,8 +8,8 @@ install-test:
 	pip install -r requirements/test.pip
 
 test:
-	flake8 django_esutils
 	demo_esutils test demo_esutils
+	flake8 django_esutils
 
 clean:
 	rm -f .coverage
