@@ -86,6 +86,14 @@ class SearchMappingType(MappingType, Indexable):
         return doc
 
     @classmethod
+    def count(cls):
+        return cls.search().count()
+
+    @classmethod
+    def query(cls, **kwargs):
+        return cls.search().query(**kwargs)
+
+    @classmethod
     def generate_mappings(cls):
         return dict([(doc_type, {
         }) for doc_type in settings.ES_DOC_TYPES])
