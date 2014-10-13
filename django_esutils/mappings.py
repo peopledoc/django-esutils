@@ -51,6 +51,19 @@ class SearchMappingType(MappingType, Indexable):
         }
 
     @classmethod
+    def flat(cls, relate_name, queryset, column='pk', order_by=None):
+        """Flats queryset values accoding passed column.
+
+        :params relate_name: name of the field related.
+        :params queryset: related queryset.
+        :params column: default=pk.
+        :params order_by: default=column.
+        """
+        qs = queryset.values_list(column, flat=True)
+        qs = qs.order_by(order_by or column)
+        return list(qs)
+
+    @classmethod
     def extract_document(cls, obj_id, obj=None):
         """Returns json doc to index for a given pkand the current mapping."""
 
@@ -82,6 +95,9 @@ class SearchMappingType(MappingType, Indexable):
             # ensure pk serialization
             if doc[k] and k == cls.id_field:
                 doc[k] = str(doc[k])
+
+            if doc[k].__class__.__name__ == 'ManyRelatedManager':
+                doc[k] = cls.flat(k, doc[k])
 
         return doc
 
