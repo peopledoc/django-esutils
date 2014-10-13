@@ -2,6 +2,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+from django_esutils.models import ESManager
+
 from uuidfield import UUIDField
 
 
@@ -35,3 +37,5 @@ class Article(models.Model):
     status = models.CharField(max_length=1,
                               choices=ARTICLE_STATUSES,
                               default=0)
+
+    objects = ESManager()
