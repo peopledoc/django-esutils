@@ -77,13 +77,22 @@ class MappingTestCase(TestCase):
         Article.objects.filter(author=self.louise).update(subject='hey #tgif')
 
         # reindex all
-        ArticleMappingType.es_index_all()
+        ArticleMappingType.run_index_all()
         # refresh index
         ArticleMappingType.refresh_index()
 
         # should
         self.assertEqual(s_.query(subject__prefix='amaz').count(), 0)
         self.assertEqual(s_.query(subject__match='#tgif').count(), 1)
+
+        # update some contents
+        Article.objects.filter(author=self.louise).update(content='monday uh!')
+
+        # refresh index
+        ArticleMappingType.refresh_index()
+
+        self.assertEqual(s_.query(content__term='yo').count(), 0)
+        self.assertEqual(s_.query(content__term='monday').count(), 1)
 
         for i, a in enumerate([article1, article2]):
             # remove an article
