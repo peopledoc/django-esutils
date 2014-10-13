@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.db.models.signals import post_delete
 
 from django_esutils.mappings import SearchMappingType
+from django_esutils.models import post_update
 
 from demo_esutils.models import Article
 
@@ -59,5 +60,6 @@ class ArticleMappingType(SearchMappingType):
         return ARTICLE_MAPPING
 
 
-post_save.connect(ArticleMappingType.es_index, sender=Article)
-post_delete.connect(ArticleMappingType.es_unindex, sender=Article)
+post_save.connect(ArticleMappingType.on_post_save, sender=Article)
+post_delete.connect(ArticleMappingType.on_post_delete, sender=Article)
+post_update.connect(ArticleMappingType.on_post_update, sender=Article)
