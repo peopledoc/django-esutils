@@ -40,20 +40,19 @@ class ElasticutilsFilterSet(object):
 
     @property
     def qs(self):
-        query = self.queryset or Q()
+        query = self.queryset or self.mapping_type.query()
         filter_ = F()
-        term = self.search_terms.get('_all')
-        operation = or_ if term else and_
+        operation = and_
         for f in self.search_fields:
             action = self.search_actions.get(f, '')
             field_action = '{0}__{1}'.format(f, action)
-            term = term or self.search_terms.get(f)
+            term = self.search_terms.get(f)
             # nothing to filter on
             if not term:
                 continue
             # update query
             filter_ = operation(filter_, F(**{field_action: term}))
-        return S(self.mapping_type).query(query).filter(filter_)
+        return query.filter(filter_)
 
     @property
     def count(self):
