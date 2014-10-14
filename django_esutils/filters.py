@@ -92,8 +92,11 @@ class ElasticutilsFilterBackend(SearchFilter):
     def get_filter_class(self, view, queryset=None):
         return getattr(view, 'filter_class', ElasticutilsFilterSet)
 
-    def get_filter_key(self, view, queryset=None):
-        return getattr(view, 'filter_key', 'q')
+    def get_search_keys(self, view, queryset=None):
+        search_keys = getattr(view, 'search_fields', [])
+        if 'q' not in search_keys:
+            search_keys.append('q')
+        return search_keys
 
     def split_query_str(self, query_str):
         """
@@ -115,9 +118,30 @@ class ElasticutilsFilterBackend(SearchFilter):
     def get_search_terms(self, request, view, queryset=None):
         """Return Splitted query string automagically.
         """
-        filter_key = self.get_filter_key(view)
-        query_str = request.QUERY_PARAMS.get(filter_key, '')
-        return self.split_query_str(query_str)
+        params = request.QUERY_PARAMS.copy()
+        search_keys = self.get_search_keys(view)
+
+        search_terms = dict()
+
+        for s_key in search_keys:
+            # no value found at start
+            value = None
+            # get value or valuelist
+            for key in params.keys():
+                # ex.: {'tag': 'yo'}
+                if key == s_key:
+                    value = params.get(key)
+                    break
+                # ex.: {'tags[]': [1, 2]}
+                if key == '{0}[]'.format(s_key):
+                    value = params.getlist(key)
+                    break
+            # nothing to search
+            if not value:
+                continue
+            # update search values
+            search_terms[s_key] = value
+        return search_terms
 
     def filter_queryset(self, request, queryset, view):
 
