@@ -59,7 +59,9 @@ class SearchMappingType(MappingType, Indexable):
         :params column: default=pk.
         :params order_by: default=column.
         """
-        qs = queryset.values_list(column, flat=True)
+
+        # qs = queryset.values_list(column, flat=True)
+        qs = queryset.values('name', 'pk')
         qs = qs.order_by(order_by or column)
         return list(qs)
 
