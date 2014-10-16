@@ -17,6 +17,7 @@ class SearchMappingType(MappingType, Indexable):
     """
 
     id_field = 'pk'
+    _nested_fields = None
 
     @classmethod
     def get_index(cls):
@@ -36,6 +37,21 @@ class SearchMappingType(MappingType, Indexable):
     @classmethod
     def get_field_mapping(cls):
         raise NotImplemented('Implement this to speficy the fields to map.')
+
+    @classmethod
+    def get_nested_fields(cls):
+        # already computed
+        if cls._nested_fields is not None:
+            return cls._nested_fields
+
+        cls._nested_fields = {}
+
+        for k, v in cls.get_field_mapping().items():
+            if not v.get('type') == 'nested':
+                continue
+            cls._nested_fields[k] = v.get('properties', {}).keys()
+
+        return cls._nested_fields
 
     @classmethod
     def get_mapping(cls):
