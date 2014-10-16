@@ -16,17 +16,33 @@ class S(_S):
             yield r.get_object()
 
 
+def _F(path, field, term, action='term'):
+    """Returns F with path:field for nested filtering.
+
+    http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-nested-filter.html  # noqa
+    """
+    return {
+        action: {
+            '{0}.{1}'.format(path, field): term
+        }
+    }
+
+
 class ElasticutilsFilterSet(object):
 
     def __init__(self, search_fields=None, search_actions=None,
-                 search_terms=None, mapping_type=None, queryset=None):
+                 search_terms=None, mapping_type=None, queryset=None,
+                 default_action='term'):
 
         self.search_fields = search_fields or ['_all']
         self.search_actions = search_actions or {}
         self.search_terms = search_terms or {'_all': ''}
 
         self.mapping_type = mapping_type
+        self.nested_fields = self.mapping_type.get_nested_fields()
         self.queryset = queryset
+
+        self.default_action = default_action
 
     def __iter__(self):
         for obj in self.qs:
@@ -38,21 +54,45 @@ class ElasticutilsFilterSet(object):
     def __getitem__(self, key):
         return self.qs[key]
 
+    def get_filter(self, f, term):
+        action = self.search_actions.get(f, self.default_action)
+        field_action = '{0}__{1}'.format(f, action)
+        return F(**{field_action: term})
+
+    def _get_filter_nestedi_item(self, f, term):
+
+        fields = self.nested_fields.get(f)
+        action = self.search_actions.get(f, self.default_action)
+
+        return  {
+            'nested': {
+                'path': f,
+                'filter': {
+                    'or': [_F(f, nf, term, action=action) for nf in fields]
+                }
+            }
+        }
+
+
+    def get_filter_nested(self, f, terms):
+        return [self._get_filter_nestedi_item(f, t) for t in terms if t != '']
+
     @property
     def qs(self):
+
         query = self.queryset or self.mapping_type.query()
-        filter_ = F()
-        operation = and_
+
         for f in self.search_fields:
-            action = self.search_actions.get(f, '')
-            field_action = '{0}__{1}'.format(f, action)
             term = self.search_terms.get(f)
             # nothing to filter on
             if not term:
                 continue
-            # update query
-            filter_ = operation(filter_, F(**{field_action: term}))
-        return query.filter(filter_)
+            if f not in self.nested_fields:
+                query.filter(self.get_filter(f, term))
+            for f_raw in self.get_filter_nested(f, term):
+                query = query.filter_raw(f_raw)
+
+        return query
 
     @property
     def count(self):
