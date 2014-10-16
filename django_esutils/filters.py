@@ -34,9 +34,9 @@ class ElasticutilsFilterSet(object):
                  search_terms=None, mapping_type=None, queryset=None,
                  default_action='term'):
 
-        self.search_fields = search_fields or ['_all']
+        self.search_fields = search_fields or []
         self.search_actions = search_actions or {}
-        self.search_terms = search_terms or {'_all': ''}
+        self.search_terms = search_terms or {}
 
         self.mapping_type = mapping_type
         self.nested_fields = self.mapping_type.get_nested_fields()
