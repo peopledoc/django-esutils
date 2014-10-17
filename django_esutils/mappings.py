@@ -39,19 +39,33 @@ class SearchMappingType(MappingType, Indexable):
         raise NotImplemented('Implement this to speficy the fields to map.')
 
     @classmethod
-    def get_nested_fields(cls):
-        # already computed
-        if cls._nested_fields is not None:
-            return cls._nested_fields
+    def get_nested_fields(cls, field=None):
+        """Returns nested fields of a field or all the nested fields dict.
 
-        cls._nested_fields = {}
+        ..code-block: python
 
-        for k, v in cls.get_field_mapping().items():
-            if not v.get('type') == 'nested':
-                continue
-            cls._nested_fields[k] = v.get('properties', {}).keys()
+            >>> ArticleMappingType.get_nested_fields()
+            {
+                'category': ['pk', 'name']
+            }
 
-        return cls._nested_fields
+            >>> ArticleMappingType.get_nested_fields(field=category)
+            ['pk', 'name']
+
+        :param field: request only nested fields of this field (optional)
+        """
+        # not set already
+        if cls._nested_fields is None:
+            cls._nested_fields = {}
+            for k, v in cls.get_field_mapping().items():
+                if not v.get('type') == 'nested':
+                    continue
+                cls._nested_fields[k] = v.get('properties', {}).keys()
+
+        # returns nested fields of a field if field param is passed or all the
+        # nested fields dict.
+        return cls._nested_fields[field] if field in cls._nested_fields \
+            else cls._nested_fields
 
     @classmethod
     def get_mapping(cls):
@@ -67,7 +81,7 @@ class SearchMappingType(MappingType, Indexable):
         }
 
     @classmethod
-    def flat(cls, relate_name, queryset, column='pk', order_by=None):
+    def flat(cls, field, queryset, column='pk', order_by=None):
         """Flats queryset values accoding passed column.
 
         :params relate_name: name of the field related.
@@ -76,8 +90,7 @@ class SearchMappingType(MappingType, Indexable):
         :params order_by: default=column.
         """
 
-        # qs = queryset.values_list(column, flat=True)
-        qs = queryset.values('name', 'pk')
+        qs = queryset.values(*cls.get_nested_fields(field=field))
         qs = qs.order_by(order_by or column)
         return list(qs)
 
@@ -114,7 +127,8 @@ class SearchMappingType(MappingType, Indexable):
             if doc[k] and k == cls.id_field:
                 doc[k] = str(doc[k])
 
-            if doc[k].__class__.__name__ == 'ManyRelatedManager':
+            if doc[k].__class__.__name__ in ['ManyRelatedManager',
+                                             'RelatedManager']:
                 doc[k] = cls.flat(k, doc[k])
 
         return doc
