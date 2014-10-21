@@ -88,7 +88,8 @@ class ElasticutilsFilterSet(object):
             if not term:
                 continue
             if f not in self.nested_fields:
-                query.filter(self.get_filter(f, term))
+                query = query.filter(self.get_filter(f, term))
+                continue
             for f_raw in self.get_filter_nested(f, term):
                 query = query.filter_raw(f_raw)
 
