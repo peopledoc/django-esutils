@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-from operator import and_
-from operator import or_
-
 from elasticutils import F
-from elasticutils import Q
 from elasticutils.contrib.django import S as _S
 
 from rest_framework.filters import SearchFilter
@@ -59,12 +55,12 @@ class ElasticutilsFilterSet(object):
         field_action = '{0}__{1}'.format(f, action)
         return F(**{field_action: term})
 
-    def _get_filter_nestedi_item(self, f, term):
+    def _get_filter_nested_item(self, f, term):
 
         fields = self.nested_fields.get(f)
         action = self.search_actions.get(f, self.default_action)
 
-        return  {
+        return {
             'nested': {
                 'path': f,
                 'filter': {
@@ -73,9 +69,8 @@ class ElasticutilsFilterSet(object):
             }
         }
 
-
     def get_filter_nested(self, f, terms):
-        return [self._get_filter_nestedi_item(f, t) for t in terms if t != '']
+        return [self._get_filter_nested_item(f, t) for t in terms if t != '']
 
     @property
     def qs(self):
