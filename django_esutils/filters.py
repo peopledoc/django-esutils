@@ -32,7 +32,7 @@ class ElasticutilsFilterSet(object):
 
     def __init__(self, search_fields=None, search_actions=None,
                  search_terms=None, mapping_type=None, queryset=None,
-                 default_action='term'):
+                 default_action=''):
 
         self.search_fields = search_fields or []
         self.search_actions = search_actions or {}
