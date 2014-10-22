@@ -58,13 +58,12 @@ class ElasticutilsFilterSet(object):
     def _get_filter_nested_item(self, f, term):
 
         fields = self.nested_fields.get(f)
-        action = self.search_actions.get(f, self.default_action)
 
         return {
             'nested': {
                 'path': f,
                 'filter': {
-                    'or': [_F(f, nf, term, action=action) for nf in fields]
+                    'or': [_F(f, nf, term) for nf in fields]
                 }
             }
         }
