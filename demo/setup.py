@@ -16,7 +16,7 @@ ENTRY_POINTS = {
     'console_scripts': ['demo_esutils = demo_esutils.manage:main'],
 }
 AUTHOR = u'Novapost'
-EMAIL = u'rd@novapost.net'
+EMAIL = u'florent.pigout@novapost.fr'
 URL = u'https://github.com/novapost/django-esutils'
 CLASSIFIERS = []
 KEYWORDS = []

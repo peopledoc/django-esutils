@@ -76,7 +76,7 @@ if __name__ == '__main__':  # ``import setup`` doesn't trigger setup().
           ],
           keywords='',
           author='Novapost',
-          author_email='rd@novapost.fr',
+          author_email='florent.pigout@novapost.fr',
           url='https://github.com/novapost/%s' % name,
           license='closed source',
           packages=packages(name.replace('-', '_')),
