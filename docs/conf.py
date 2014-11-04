@@ -51,7 +51,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'Demo'
 project_slug = re.sub(r'([\w_.-]+)', u'-', project)
-copyright = u'Closed Source'
+copyright = u'MIT'
 author = u'Novaport'
 author_slug = re.sub(r'([\w_.-]+)', u'-', author)
 
