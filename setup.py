@@ -69,8 +69,10 @@ if __name__ == '__main__':  # ``import setup`` doesn't trigger setup().
           description="""Django Esutils.""",
           long_description=readme,
           classifiers=[
-              "Programming Language :: Python",
-              'License :: Other/Proprietary License',
+              'Development Status :: 3 - Alpha',
+              'Programming Language :: Python',
+              'Framework :: Django',
+              'License :: OSI Approved :: MIT License',
           ],
           keywords='',
           author='Novapost',

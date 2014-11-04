@@ -18,8 +18,7 @@ ENTRY_POINTS = {
 AUTHOR = u'Novapost'
 EMAIL = u'rd@novapost.net'
 URL = u'https://github.com/novapost/django-esutils'
-CLASSIFIERS = ['Development Status :: 3 - Alpha',
-               "Programming Language :: Python :: 2.7"]
+CLASSIFIERS = []
 KEYWORDS = []
 
 
