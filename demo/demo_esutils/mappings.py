@@ -12,10 +12,10 @@ from demo_esutils.models import Article
 
 ARTICLE_MAPPING = {
     # author
-    'author-username': {
+    'author.username': {
         'type': 'string',
     },
-    'author-email': {
+    'author.email': {
         'type': 'string',
         'index': 'not_analyzed'
     },
@@ -31,7 +31,7 @@ ARTICLE_MAPPING = {
     'category_id': {
         'type': 'integer',
     },
-    'category-name': {
+    'category.name': {
         'type': 'string',
     },
     # subject
