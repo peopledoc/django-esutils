@@ -95,12 +95,17 @@ class SearchMappingType(MappingType, Indexable):
         return list(qs)
 
     @classmethod
+    def get_object_by_id(cls, obj_id):
+        kwargs = {cls.id_field: obj_id}
+        return cls.get_model().objects.get(**kwargs)
+
+    @classmethod
     def extract_document(cls, obj_id, obj=None):
         """Returns json doc to index for a given pkand the current mapping."""
 
         # retrieve object if not passed
         if obj is None:
-            obj = cls.get_model().get(id=obj_id)
+            obj = cls.get_object_by_id(obj_id)
 
         # shortcut
         mapping_keys = [cls.id_field] + cls.get_field_mapping().keys()
