@@ -11,7 +11,12 @@ DESCRIPTION = u'Demo for django-esutils.'
 README = open(os.path.join(here, 'README')).read()
 VERSION = open(os.path.join(os.path.dirname(here), 'VERSION')).read().strip()
 PACKAGES = ['demo_esutils']
-REQUIREMENTS = ['django-esutils']
+REQUIREMENTS = [
+    'celery',
+    'django<1.7',
+    'django-esutils',
+    'django-uuidfield',
+]
 ENTRY_POINTS = {
     'console_scripts': ['demo_esutils = demo_esutils.manage:main'],
 }
