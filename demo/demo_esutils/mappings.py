@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from uuid import UUID
+
 from django.db.models.signals import post_save
 from django.db.models.signals import post_delete
 
@@ -58,6 +60,14 @@ class ArticleMappingType(SearchMappingType):
     @classmethod
     def get_field_mapping(cls):
         return ARTICLE_MAPPING
+
+    @classmethod
+    def get_object_by_id(cls, obj_id):
+        kwargs = {cls.id_field: UUID(obj_id)}
+        return cls.get_model().objects.get(**kwargs)
+
+    def get_object(self):
+        return ArticleMappingType.get_object_by_id(self._id)
 
 
 post_save.connect(ArticleMappingType.on_post_save, sender=Article)
