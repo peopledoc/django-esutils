@@ -18,6 +18,7 @@ class SearchMappingType(MappingType, Indexable):
 
     id_field = 'pk'
     _nested_fields = None
+    rel_sep = '.'
 
     @classmethod
     def get_index(cls):
@@ -115,14 +116,15 @@ class SearchMappingType(MappingType, Indexable):
         for k in mapping_keys:
             # split key if is a 2 level key or one level key, ex.:
             #   - 'id', None if k == 'id'
-            #   - 'author', 'first_name' if k == 'author-first_name'
-            k_1, k_2 = (k, None) if '-' not in k else k.split('-')
+            #   - 'author', 'first_name' if k == 'author.first_name'
+            k_1, k_2 = (k, None) if cls.rel_sep not in k \
+                else k.split(cls.rel_sep)
 
             # update the doc according splitted key, ex.: {
             #     'id': obj.id,
             # }
             # ... or if is a 2 level key: {
-            #     'author-first_name': obj.author.first_name,
+            #     'author.first_name': obj.author.first_name,
             # }
             doc[k] = getattr(obj, k_1, None)
             if doc[k] and k_2:
