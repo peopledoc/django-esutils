@@ -115,14 +115,14 @@ class SearchMappingType(MappingType, Indexable):
         for k in mapping_keys:
             # split key if is a 2 level key or one level key, ex.:
             #   - 'id', None if k == 'id'
-            #   - 'author', 'first_name' if k == 'author__first_name'
-            k_1, k_2 = (k, None) if '__' not in k else k.split('__')
+            #   - 'author', 'first_name' if k == 'author-first_name'
+            k_1, k_2 = (k, None) if '-' not in k else k.split('-')
 
             # update the doc according splitted key, ex.: {
             #     'id': obj.id,
             # }
             # ... or if is a 2 level key: {
-            #     'author__first_name': obj.author.first_name,
+            #     'author-first_name': obj.author.first_name,
             # }
             doc[k] = getattr(obj, k_1, None)
             if doc[k] and k_2:
