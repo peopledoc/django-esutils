@@ -52,7 +52,7 @@ class ElasticutilsFilterSet(object):
 
     def get_filter(self, f, term):
         action = self.search_actions.get(f, self.default_action)
-        field_action = '{0}__{1}'.format(f, action)
+        field_action = '{0}__{1}'.format(f, action) if action else f
         return F(**{field_action: term})
 
     def _get_filter_nested_item(self, f, term):
