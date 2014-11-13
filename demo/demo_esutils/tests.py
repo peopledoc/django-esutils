@@ -61,12 +61,12 @@ class MappingTestCase(TestCase):
         self.assertEqual(M.query(subject__prefix='amaz').count(), 1)
         self.assertEqual(M.query(subject__match='amaz').count(), 0)
 
-        self.assertEqual(M.query(author__username__prefix='lo').count(), 1)
-        self.assertEqual(M.query(author__username__match='Louise').count(), 1)
+        self.assertEqual(M.query(**{'author-username__prefix':'lo'}).count(), 1)
+        self.assertEqual(M.query(**{'author-username__match':'Louise'}).count(), 1)
 
-        self.assertEqual(M.query(category__name__prefix='tes').count(), 2)
-        self.assertEqual(M.query(category__name__term='tes').count(), 0)
-        self.assertEqual(M.query(category__name__term='tests').count(), 2)
+        self.assertEqual(M.query(**{'category-name__prefix': 'tes'}).count(), 2)
+        self.assertEqual(M.query(**{'category-name__term': 'tes'}).count(), 0)
+        self.assertEqual(M.query(**{'category-name__term': 'tests'}).count(), 2)
 
         # update some contents
         Article.objects.filter(author=self.louise).update(subject='hey #tgif')
