@@ -120,3 +120,9 @@ ES_DOC_TYPES = [
 ]
 
 ES_SOURCE_ENABLED = True
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
+
