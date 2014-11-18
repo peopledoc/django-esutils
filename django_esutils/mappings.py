@@ -193,6 +193,8 @@ class SearchMappingType(MappingType, Indexable):
 
     @classmethod
     def run_index(cls, ids):
+        if not ids:
+            return
         tasks.index_objects.delay(cls, ids, id_field=cls.id_field)
 
     @classmethod
@@ -202,6 +204,8 @@ class SearchMappingType(MappingType, Indexable):
 
     @classmethod
     def run_unindex(cls, ids):
+        if not ids:
+            return
         tasks.unindex_objects.delay(cls, ids)
 
     @classmethod
