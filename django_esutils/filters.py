@@ -78,6 +78,37 @@ class ElasticutilsFilterSet(object):
             }
         }
 
+    def build_complete_filter_raw(self, search, filter_raw):
+        filters = {}
+        if 'filter' in search:
+            filters['and'] = [search['filter'], ]
+            filters['and'].append(filter_raw)
+        else:
+            filters = filter_raw
+        return filters
+
+    def update_query(self, query, f, term=None, raw=False):
+        if not term:
+            return query
+
+        if not raw and f not in self.nested_fields and f != 'ids':
+            return query.filter(self.get_filter(f, term))
+
+        elif raw and f in self.nested_fields:
+            for f_raw in self.get_filter_nested(f, term):
+                filters = self.build_complete_filter_raw(
+                    query.build_search(),
+                    f_raw)
+                query = query.filter_raw(filters)
+
+        elif raw and f == 'ids':
+            filters = self.build_complete_filter_raw(
+                query.build_search(),
+                self.get_filter_ids(term))
+            query = query.filter_raw(filters)
+
+        return query
+
     @property
     def qs(self):
 
@@ -85,18 +116,16 @@ class ElasticutilsFilterSet(object):
 
         for f in self.search_fields:
             term = self.search_terms.get(f)
-            # nothing to filter on
-            if not term:
-                continue
-            if f == 'ids':
-                query = query.filter_raw(self.get_filter_ids(term))
-            if f not in self.nested_fields:
-                query = query.filter(self.get_filter(f, term))
-                continue
-            for f_raw in self.get_filter_nested(f, term):
-                query = query.filter_raw(f_raw)
+            query = self.update_query(query, f, term)
 
-        return query
+        for f in self.nested_fields:
+            term = self.search_terms.get(f)
+
+            query = self.update_query(query, f, term, raw=True)
+
+        id_list = self.search_terms.get('ids')
+
+        return self.update_query(query, 'ids', id_list, raw=True)
 
     @property
     def count(self):
