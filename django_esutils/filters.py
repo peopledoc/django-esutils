@@ -89,7 +89,6 @@ class ElasticutilsFilterSet(object):
             if not term:
                 continue
             if f == 'ids':
-                import ipdb; ipdb.set_trace()
                 query = query.filter_raw(self.get_filter_ids(term))
             if f not in self.nested_fields:
                 query = query.filter(self.get_filter(f, term))
