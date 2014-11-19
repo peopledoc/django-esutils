@@ -71,6 +71,13 @@ class ElasticutilsFilterSet(object):
     def get_filter_nested(self, f, terms):
         return [self._get_filter_nested_item(f, t) for t in terms if t != '']
 
+    def get_filter_ids(self, values):
+        return {
+            'ids': {
+                'values': [int(i) for i in values]
+            }
+        }
+
     @property
     def qs(self):
 
@@ -81,6 +88,9 @@ class ElasticutilsFilterSet(object):
             # nothing to filter on
             if not term:
                 continue
+            if f == 'ids':
+                import ipdb; ipdb.set_trace()
+                query = query.filter_raw(self.get_filter_ids(term))
             if f not in self.nested_fields:
                 query = query.filter(self.get_filter(f, term))
                 continue
@@ -130,6 +140,8 @@ class ElasticutilsFilterBackend(SearchFilter):
         search_keys = getattr(view, 'search_fields', [])
         if 'q' not in search_keys:
             search_keys.append('q')
+        if 'ids' not in search_keys:
+            search_keys.append('ids')
         return search_keys
 
     def split_query_str(self, query_str):
