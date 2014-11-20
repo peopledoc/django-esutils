@@ -111,8 +111,10 @@ class ElasticutilsFilterSet(object):
 
     @property
     def qs(self):
+        query = self.queryset
 
-        query = self.queryset or self.mapping_type.query()
+        if query is None:
+            query = self.mapping_type.query()
 
         for f in self.search_fields:
             term = self.search_terms.get(f)
