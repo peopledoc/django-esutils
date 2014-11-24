@@ -17,7 +17,6 @@ install:
 before_script:
     - scripts/travis/setup.sh
     - virtualenv .
-    - ./bin/pip install -r requirements/test.pip
 
 script:
     - demo_esutils test demo_esutils
