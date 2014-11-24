@@ -19,5 +19,4 @@ before_script:
     - virtualenv .
 
 script:
-    - demo_esutils test demo_esutils
-    - flake8 django_esutils
+    - make test
