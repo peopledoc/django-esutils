@@ -1,5 +1,6 @@
 django-nose
 rednose
+flake8
 -e git+https://github.com/novapost/elasticutils.git@make-id_field-customizable#egg=elasticutils
 -e ./
 -e ./demo/
