@@ -5,7 +5,7 @@ python:
 
 env:
     - ESVER=1.2.4
-    - ESVER=2.0.0
+    - ESVER=1.4.0
 
 before_install:
     - chmod +x scripts/travis/install.sh
