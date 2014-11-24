@@ -1,0 +1,19 @@
+language: python
+
+python:
+    - "2.7"
+
+env:
+    - ESVER=1.2.4
+    - ESVER=2.0.0
+
+install:
+    - scripts/travis/install.sh
+
+before_script:
+    - scripts/travis/setup.sh
+    - virtualenv .
+    - ./bin/pip install -r requirements/dev.txt
+
+script:
+    - ./bin/python run_tests.py
