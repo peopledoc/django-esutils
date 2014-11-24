@@ -7,6 +7,10 @@ env:
     - ESVER=1.2.4
     - ESVER=2.0.0
 
+before_install:
+    - chmod +x scripts/travis/install.sh
+    - chmod +x scripts/travis/setup.sh
+
 install:
     - scripts/travis/install.sh
 
