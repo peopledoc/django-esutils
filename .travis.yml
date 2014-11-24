@@ -13,7 +13,8 @@ install:
 before_script:
     - scripts/travis/setup.sh
     - virtualenv .
-    - ./bin/pip install -r requirements/dev.txt
+    - ./bin/pip install -r requirements/test.py
 
 script:
-    - ./bin/python run_tests.py
+    - demo_esutils test demo_esutils
+    - flake8 django_esutils
