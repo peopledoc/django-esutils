@@ -1,0 +1,22 @@
+language: python
+
+python:
+    - "2.7"
+
+env:
+    - ESVER=1.2.4
+    - ESVER=1.4.0
+
+before_install:
+    - chmod +x scripts/travis/install.sh
+    - chmod +x scripts/travis/setup.sh
+
+install:
+    - scripts/travis/install.sh
+
+before_script:
+    - scripts/travis/setup.sh
+    - virtualenv .
+
+script:
+    - make test

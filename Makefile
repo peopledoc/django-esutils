@@ -7,7 +7,7 @@ doc:
 install-test:
 	pip install -r requirements/test.pip
 
-test:
+test: install-test
 	demo_esutils test demo_esutils
 	flake8 django_esutils
 
