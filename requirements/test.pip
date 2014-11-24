@@ -1,5 +1,5 @@
 django-nose
 rednose
--e git+https://github.com/novapost/django-esutils.git@make-id_field-customizable#egg=elasticutils
+-e git+https://github.com/novapost/elasticutils.git@make-id_field-customizable#egg=elasticutils
 -e ./
 -e ./demo/
