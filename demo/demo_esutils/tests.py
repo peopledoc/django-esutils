@@ -1,27 +1,24 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 
 from demo_esutils.models import Category
 from demo_esutils.models import Article
+from demo_esutils.models import User
 from demo_esutils.mappings import ArticleMappingType as M
 
 
 class MappingTestCase(TestCase):
 
+    fixtures = ['test_data']
+
     def setUp(self):
-
+        self.louise = User.objects.get(pk=2)
+        self.florent = User.objects.get(pk=1)
         M.update_mapping()
-
-        self.florent = User.objects.create(username='florent',
-                                           email='florent@demo.es')
-
-        self.louise = User.objects.create(username='louise',
-                                          email='louise@demo.es')
+        M.run_index_all()
+        M.refresh_index()
 
     def tearDown(self):
-        self.florent.delete()
-        self.louise.delete()
-
+        User.objects.all().delete()
         Category.objects.all().delete()
         Article.objects.all().delete()
         M.refresh_index()
@@ -55,21 +52,32 @@ class MappingTestCase(TestCase):
             add_count = M.count()
             self.assertEqual(add_count, prev_count + i + 1)
 
-        self.assertEqual(M.query(subject__match='My Am').count(), 1)
+        for i, a in enumerate([article1, article2]):
+            # remove an article
+            a.delete()
+            # refresh index
+            M.refresh_index()
+            # check removed
+            del_count = M.count()
+            self.assertEqual(del_count, add_count - i - 1)
+
+    def test_search_string(self):
+
+        # self.assertEqual(M.query(subject__match='My Am').count(), 1)
         self.assertEqual(M.query(subject__match='WorkS').count(), 1)
         self.assertEqual(M.query(subject__match='works').count(), 1)
         self.assertEqual(M.query(subject__prefix='amaz').count(), 1)
         self.assertEqual(M.query(subject__match='amaz').count(), 0)
 
-        self.assertEqual(M.query(**{'author.username__prefix':'lo'}).count(), 1)
-        self.assertEqual(M.query(**{'author.username__match':'Louise'}).count(), 1)
+        self.assertEqual(M.query(**{'author.username__prefix': 'lo'}).count(), 2)  # noqa
+        self.assertEqual(M.query(**{'author.username__match': 'Louise'}).count(), 2)  # noqa
 
-        self.assertEqual(M.query(**{'category.name__prefix': 'tes'}).count(), 2)
+        self.assertEqual(M.query(**{'category.name__prefix': 'tes'}).count(), 2)  # noqa
         self.assertEqual(M.query(**{'category.name__term': 'tes'}).count(), 0)
-        self.assertEqual(M.query(**{'category.name__term': 'tests'}).count(), 2)
+        self.assertEqual(M.query(**{'category.name__term': 'tests'}).count(), 2)  # noqa
 
         # update some contents
-        Article.objects.filter(author=self.louise).update(subject='hey #tgif')
+        Article.objects.filter(pk=3).update(subject='hey #tgif')
 
         # reindex all
         M.run_index_all()
@@ -81,7 +89,7 @@ class MappingTestCase(TestCase):
         self.assertEqual(M.query(subject__match='#tgif').count(), 1)
 
         # update some contents
-        Article.objects.filter(author=self.louise).update(content='monday uh!')
+        Article.objects.filter(pk=3).update(content='monday uh!')
 
         # refresh index
         M.refresh_index()
@@ -89,11 +97,9 @@ class MappingTestCase(TestCase):
         self.assertEqual(M.query(content__term='yo').count(), 0)
         self.assertEqual(M.query(content__term='monday').count(), 1)
 
-        for i, a in enumerate([article1, article2]):
-            # remove an article
-            a.delete()
-            # refresh index
-            M.refresh_index()
-            # check removed
-            del_count = M.count()
-            self.assertEqual(del_count, add_count - i - 1)
+    """def test_search_ids(self):
+
+
+    def test_search_nested(self):
+
+    def test_multiple_fields(self):"""
