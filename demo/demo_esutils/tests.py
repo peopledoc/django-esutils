@@ -200,6 +200,48 @@ class FilterTestCase(BaseTest):
         subject_filter = filter_set.get_filter('category.name', 'tes').__repr__()  # noqa
         self.assertEqual(F(**{'category.name__startswith': 'tes'}).__repr__(), subject_filter)  # noqa
 
+    def test_filter_nested(self):
+        # TODO
+        search_terms = {'contributors': ['louise']}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 2)
+        filters = query.build_search()
+
+        self.assertEqual(filters['filter'], filter_set._get_filter_nested_item('contributors', 'louise'))  # noqa
+
+        search_terms = {'contributors': ['louise', 'florent']}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 1)
+
+    def test_filter_ids(self):
+        search_terms = {'ids': [1, 2]}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 2)
+
+        ids_filter = query.build_search()['filter']
+        self.assertEqual(ids_filter, filter_set.get_filter_ids([1, 2]))
+
     """def test_filter_in(self):
         # TODO
 
@@ -207,12 +249,6 @@ class FilterTestCase(BaseTest):
         # TODO
 
     def test_filter_distance(self):
-        # TODO
-
-    def test_filter_ids(self):
-        ids = [1, 2]
-
-    def test_filter_nested(self):
         # TODO
 
     def test_filter_multiple_fields(self):
