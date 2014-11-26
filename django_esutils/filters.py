@@ -51,6 +51,10 @@ class ElasticutilsFilterSet(object):
         return self.qs[key]
 
     def get_filter(self, f, term):
+        # Action must be either None or one that can be handled by Elasticutils
+        # According to Elasticutils
+        # Available actions are : startswith, prefix, in, range and distance
+
         action = self.search_actions.get(f, self.default_action)
         field_action = '{0}__{1}'.format(f, action) if action else f
         return F(**{field_action: term})
