@@ -29,7 +29,9 @@ class Article(models.Model):
 
     uuid = UUIDField(auto=True, hyphenate=True)
 
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(User, related_name='author')
+
+    contributors = models.ManyToManyField(User, related_name='contributors')
 
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(auto_now=True)

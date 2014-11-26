@@ -46,6 +46,13 @@ ARTICLE_MAPPING = {
     'status': {
         'type': 'string',
     },
+    'contributors': {
+        'type': 'nested',
+        'properties': {
+            'username': {'type': 'string'},
+            'id': {'type': 'string'}
+        }
+    }
 }
 
 
