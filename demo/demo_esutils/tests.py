@@ -318,12 +318,82 @@ class FilterTestCase(BaseTest):
         query = filter_set.qs
         self.assertEqual(query.count(), 1)
 
-    """def test_filter_in(self):
-        # TODO
+    def test_filter_range_and_in(self):
 
-    def test_filter_range(self):
-        # TODO
+        search_terms = {'status': 0}
+        search_actions = {'status': 'gt'}
 
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        self.assertEqual(filter_set.qs.count(), 3)
+
+        search_terms = {'status': 0}
+        search_actions = {'status': 'gte'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        self.assertEqual(filter_set.qs.count(), 4)
+
+        search_terms = {'status': 1}
+        search_actions = {'status': 'lt'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        self.assertEqual(filter_set.qs.count(), 1)
+
+        search_terms = {'status': 1}
+        search_actions = {'status': 'lte'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        self.assertEqual(filter_set.qs.count(), 2)
+
+        search_terms = {'status': [1, 2]}
+        search_actions = {'status': 'range'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        self.assertEqual(filter_set.qs.count(), 2)
+
+        # in
+
+        search_terms = {'status': [1, 2]}
+        search_actions = {'status': 'in'}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        self.assertEqual(filter_set.qs.count(), 2)
+
+    """
     def test_filter_distance(self):
         # TODO
 

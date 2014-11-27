@@ -47,7 +47,7 @@ ARTICLE_MAPPING = {
     },
     # status
     'status': {
-        'type': 'string',
+        'type': 'integer',
     },
     'contributors': {
         'type': 'nested',
