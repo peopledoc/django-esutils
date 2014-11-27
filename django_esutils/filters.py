@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 from elasticutils import F
-from elasticutils.contrib.django import S as _S
 
 from rest_framework.filters import SearchFilter
-
-
-class S(_S):
-
-    def all(self):
-        for r in self.execute():
-            yield r.get_object()
 
 
 def _F(path, field, term, action='term'):
