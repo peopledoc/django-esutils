@@ -85,7 +85,11 @@ class ElasticutilsFilterSet(object):
     def build_complete_filter_raw(self, search, filter_raw):
         filters = {}
         if 'filter' in search:
-            filters['and'] = [search['filter'], ]
+            current = search['filter']
+            if 'and' in current:
+                filters = current
+            else:
+                filters['and'] = [current, ]
             filters['and'].append(filter_raw)
         else:
             filters = filter_raw
