@@ -41,8 +41,7 @@ class Article(models.Model):
     subject = models.CharField(max_length=256)
     content = models.TextField(blank=True, default='')
 
-    status = models.CharField(max_length=1,
-                              choices=ARTICLE_STATUSES,
-                              default=0)
+    status = models.IntegerField(choices=ARTICLE_STATUSES,
+                                 default=0)
 
     objects = ESManager()
