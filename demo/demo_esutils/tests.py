@@ -163,6 +163,9 @@ class MappingTestCase(BaseTest):
         query_date = self.freezed_time(2014, 10, 17, 16, 19, 20)
         self.assertEqual(M.query(created_at__fuzzy=(query_date, '1d')).count(), 2)  # noqa
 
+        self.assertEqual(M.query(subject__fuzzy='works').count(), 1)  # noqa
+        self.assertEqual(M.query(**{'category.name__fuzzy': 'tests'}).count(), 2)  # noqa
+
     def test_query_wild_card(self):
         self.assertEqual(M.query(subject__wildcard='ma?e').count(), 1)
         self.assertEqual(M.query(subject__wildcard='a?ing').count(), 0)
