@@ -12,7 +12,6 @@ class S(_S):
 
     def process_query_fuzzy(self, key, val, action):
         # val here is a (value, min_similarity) tuple
-        import ipdb; ipdb.set_trace()
         if isinstance(val, list) or isinstance(val, tuple):
             return {
                 'fuzzy': {
