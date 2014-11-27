@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     'django_esutils',
     # for testing
     'demo_esutils',
+    'freezegun',
 ]
 
 # Databases.
