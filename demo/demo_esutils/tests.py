@@ -1,5 +1,12 @@
+from datetime import datetime
+
 from django.test import TestCase
+from django.utils.timezone import get_current_timezone
+from django.utils.timezone import make_aware
+
 from elasticutils import F
+
+from freezegun import freeze_time
 
 from demo_esutils.models import Category
 from demo_esutils.models import Article
@@ -34,6 +41,9 @@ class BaseTest(TestCase):
         Category.objects.all().delete()
         Article.objects.all().delete()
         M.refresh_index()
+
+    def freezed_time(self, *args):
+        return make_aware(datetime(*args), get_current_timezone())
 
 
 class MappingTestCase(BaseTest):
@@ -101,33 +111,70 @@ class MappingTestCase(BaseTest):
         self.assertEqual(M.query(content__term='monday').count(), 1)
 
     def test_query_string(self):
+        # Match
 
         self.assertEqual(M.query(subject__match='WorkS').count(), 1)
         self.assertEqual(M.query(subject__match='works').count(), 1)
-        self.assertEqual(M.query(subject__prefix='amaz').count(), 1)
         self.assertEqual(M.query(subject__match='amaz').count(), 0)
-
-        self.assertEqual(M.query(**{'author.username__prefix': 'lo'}).count(), 2)  # noqa
         self.assertEqual(M.query(**{'author.username__match': 'Louise'}).count(), 2)  # noqa
 
+        # Match phrase
+        self.assertEqual(M.query(subject__match_phrase='make it ').count(), 1)
+        self.assertEqual(M.query(subject__match_phrase='make i ').count(), 0)
+
+        # Prefix
+        self.assertEqual(M.query(subject__prefix='amaz').count(), 1)
+        self.assertEqual(M.query(**{'author.username__prefix': 'lo'}).count(), 2)  # noqa
         self.assertEqual(M.query(**{'category.name__prefix': 'tes'}).count(), 2)  # noqa
+
+        # Term
         self.assertEqual(M.query(**{'category.name__term': 'tes'}).count(), 0)
         self.assertEqual(M.query(**{'category.name__term': 'tests'}).count(), 2)  # noqa
 
-        """
-        term    Term query
-        terms   Terms query
-        in  Terms query
-        match   Match query [1]
-        prefix  Prefix query [2]
-        gt, gte, lt, lte    Range query
-        range   Range query [4]
-        fuzzy   Fuzzy query
-        wildcard    Wildcard query
-        match_phrase    Match phrase query [1]
-        query_string    Querystring query [3]
-        distance
-        """
+        # Terms
+        self.assertEqual(M.query(**{'category.name__terms': ['tests', 'category']}).count(), 3)  # noqa
+
+        # in
+        self.assertEqual(M.query(**{'category.name__in': ['tests', 'category']}).count(), 3)  # noqa
+
+    @freeze_time('2014-10-16 16:19:20')
+    def test_query_range(self):
+
+        self.assertEqual(M.query(status__gt=0).count(), 3)
+        self.assertEqual(M.query(status__gte=0).count(), 4)
+        self.assertEqual(M.query(status__lt=2).count(), 2)
+        self.assertEqual(M.query(status__lte=2).count(), 3)
+
+        self.assertEqual(M.query(**{'status__gt': 1, 'status__lte': 3}).count(), 2)  # noqa
+        self.assertEqual(M.query(**{'status__range': [1, 2]}).count(), 2)  # noqa
+
+        # in
+        self.assertEqual(M.query(**{'status__in': [1, 2]}).count(), 2)  # noqa
+
+        # date range
+        query_date = self.freezed_time(2014, 10, 16, 16, 19, 20)
+        self.assertEqual(M.query(**{'created_at__lt': query_date}).count(), 1)
+
+    """
+    @freeze_time('2014-10-17 16:19:20')
+    def test_query_fuzzy(self):
+        # http://elasticutils.readthedocs.org/en/latest/api.html?highlight=fuzzy  # noqa
+
+        #self.assertEqual(M.query(status__fuzzy=(1, 1)).count(), 3)
+        query_date = self.freezed_time(2014, 10, 17, 16, 19, 20)
+        self.assertEqual(M.query(created_at__fuzzy=(query_date, '1d')).count(), 2)  # noqa
+    """
+
+    def test_query_wild_card(self):
+        self.assertEqual(M.query(subject__wildcard='ma?e').count(), 1)
+        self.assertEqual(M.query(subject__wildcard='a?ing').count(), 0)
+
+        self.assertEqual(M.query(subject__wildcard='a*ing').count(), 1)
+
+    """
+    def test_query_distance(self):
+        # TODO
+    """
 
 
 class FilterTestCase(BaseTest):
