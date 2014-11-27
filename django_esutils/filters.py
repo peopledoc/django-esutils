@@ -88,7 +88,7 @@ class ElasticutilsFilterSet(object):
         return filters
 
     def update_query(self, query, f, term=None, raw=False):
-        if not term:
+        if term is None:
             return query
 
         if not raw and f not in self.nested_fields and f != 'ids':
