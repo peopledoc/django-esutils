@@ -77,14 +77,14 @@
 	"pk": 1, 
   "model": "demo_esutils.category", 
   "fields": {
-    "name": "My category 1"
+    "name": "Some Category"
   }
 },
 {
 	"pk": 2, 
   "model": "demo_esutils.category", 
   "fields": {
-    "name": "My category 2"
+    "name": "An other one"
   }
 },
 {
@@ -99,13 +99,13 @@
   "model": "demo_esutils.article", 
   "fields": {
     "uuid": "af17aa02-c784-46f0-95ab-0f86a7dcfb55",
-    "created_at": "2014-11-06T16:26:00.909Z",
+    "created_at": "2014-10-16T16:19:20.909Z",
     "updated_at": "2014-11-06T16:26:00.909Z",
     "category": 1,
     "subject": "My subject 1",
     "content": "My content 1",
     "contributors": [1, 2],
-    "status": 1,
+    "status": 0,
     "author": 1
   }
 },
@@ -114,12 +114,12 @@
   "model": "demo_esutils.article", 
   "fields": {
     "uuid": "11e8cd58-d42f-47b2-853f-da5bf4d14551", 
-    "created_at": "2014-11-06T16:26:00.909Z",
+    "created_at": "2014-10-17T16:26:00.909Z",
     "updated_at": "2014-11-06T16:26:00.909Z",
     "category": 2,
     "subject": "My subject 2",
     "content": "My content 2",
-    "status": 2,
+    "status": 1,
     "contributors": [],
     "author": 2
 	}
@@ -129,13 +129,13 @@
   "model": "demo_esutils.article", 
   "fields": {
     "uuid": "84513307-8a6a-412f-baf6-4c82aac7f589",
-    "created_at": "2014-11-06T16:26:00.909Z",
+    "created_at": "2014-10-12T16:26:00.909Z",
     "updated_at": "2014-11-06T16:26:00.909Z",
     "category": 3,
     "subject": "My amazing article",
     "content": "yo",
     "contributors": [1, 4],
-    "status": 3,
+    "status": 2,
     "author": 2
   }
 },
@@ -144,7 +144,7 @@
   "model": "demo_esutils.article", 
   "fields": {
     "uuid": "982d71b8-b91f-4d11-9498-a818459be982",
-    "created_at": "2014-11-06T16:26:00.909Z",
+    "created_at": "2014-10-18T16:26:00.909Z",
     "updated_at": "2014-11-06T16:26:00.909Z",
     "category": 3,
     "subject": "make it works",
