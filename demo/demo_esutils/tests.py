@@ -155,7 +155,6 @@ class MappingTestCase(BaseTest):
         query_date = self.freezed_time(2014, 10, 16, 16, 19, 20)
         self.assertEqual(M.query(**{'created_at__lt': query_date}).count(), 1)
 
-    """
     @freeze_time('2014-10-17 16:19:20')
     def test_query_fuzzy(self):
         # http://elasticutils.readthedocs.org/en/latest/api.html?highlight=fuzzy  # noqa
@@ -163,7 +162,6 @@ class MappingTestCase(BaseTest):
         #self.assertEqual(M.query(status__fuzzy=(1, 1)).count(), 3)
         query_date = self.freezed_time(2014, 10, 17, 16, 19, 20)
         self.assertEqual(M.query(created_at__fuzzy=(query_date, '1d')).count(), 2)  # noqa
-    """
 
     def test_query_wild_card(self):
         self.assertEqual(M.query(subject__wildcard='ma?e').count(), 1)
@@ -189,7 +187,6 @@ class FilterTestCase(BaseTest):
                                            mapping_type=self.mapping_type,
                                            queryset=M.query(),
                                            default_action=None)
-
         # Test formed filter
         subject_filter = filter_set.get_filter('subject', 'amazing').__repr__()
         self.assertEqual(F(**{'subject': 'amazing'}).__repr__(), subject_filter)  # noqa
