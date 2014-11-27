@@ -201,7 +201,6 @@ class FilterTestCase(BaseTest):
         self.assertEqual(F(**{'category.name__startswith': 'tes'}).__repr__(), subject_filter)  # noqa
 
     def test_filter_nested(self):
-        # TODO
         search_terms = {'contributors': ['louise']}
         filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
                                            search_actions=None,
@@ -242,6 +241,36 @@ class FilterTestCase(BaseTest):
         ids_filter = query.build_search()['filter']
         self.assertEqual(ids_filter, filter_set.get_filter_ids([1, 2]))
 
+    def test_filter_multiple_fields(self):
+        search_terms = {'ids': [1, 2],
+                        'contributors': ['louise', 'florent'],
+                        'category.name': 'tes'}
+        search_actions = {'category.name': 'startswith'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+        query = filter_set.qs
+        self.assertEqual(query.count(), 0)
+
+        ids_filter = query.build_search()['filter']
+
+        search_terms = {'subject': 'amazing',
+                        'category.name': 'tes'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=search_actions,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 1)
+
     """def test_filter_in(self):
         # TODO
 
@@ -251,5 +280,4 @@ class FilterTestCase(BaseTest):
     def test_filter_distance(self):
         # TODO
 
-    def test_filter_multiple_fields(self):
-        # TODO"""
+    """
