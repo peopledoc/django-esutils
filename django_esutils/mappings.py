@@ -1,10 +1,36 @@
 """Base mapping module for easier specific usage."""
 from django.conf import settings
 
+from elasticutils.contrib.django import S as _S
 from elasticutils.contrib.django import MappingType
 from elasticutils.contrib.django import Indexable
 
 from django_esutils import tasks
+
+
+class S(_S):
+
+    def process_query_fuzzy(self, key, val, action):
+        # val here is a (value, min_similarity) tuple
+        if isinstance(val, list) or isinstance(val, tuple):
+            return {
+                'fuzzy': {
+                    key: {
+                        'value': val[0],
+                        'fuzziness': val[1]
+                    }
+                }
+            }
+        else:
+            return {
+                'fuzzy': {
+                    key: val
+                }
+            }
+
+    def all(self):
+        for r in self.execute():
+            yield r.get_object()
 
 
 class SearchMappingType(MappingType, Indexable):
@@ -139,6 +165,10 @@ class SearchMappingType(MappingType, Indexable):
                 doc[k] = cls.flat(k, doc[k])
 
         return doc
+
+    @classmethod
+    def search(cls):
+        return S(cls)
 
     @classmethod
     def count(cls):

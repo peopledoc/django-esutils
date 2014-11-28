@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
 from elasticutils import F
-from elasticutils.contrib.django import S as _S
 
 from rest_framework.filters import SearchFilter
-
-
-class S(_S):
-
-    def all(self):
-        for r in self.execute():
-            yield r.get_object()
 
 
 def _F(path, field, term, action='term'):
@@ -51,6 +43,10 @@ class ElasticutilsFilterSet(object):
         return self.qs[key]
 
     def get_filter(self, f, term):
+        # Action must be either None or one that can be handled by Elasticutils
+        # According to Elasticutils
+        # Available actions are : startswith, prefix, in, range and distance
+
         action = self.search_actions.get(f, self.default_action)
         field_action = '{0}__{1}'.format(f, action) if action else f
         return F(**{field_action: term})
@@ -81,14 +77,18 @@ class ElasticutilsFilterSet(object):
     def build_complete_filter_raw(self, search, filter_raw):
         filters = {}
         if 'filter' in search:
-            filters['and'] = [search['filter'], ]
+            current = search['filter']
+            if 'and' in current:
+                filters = current
+            else:
+                filters['and'] = [current, ]
             filters['and'].append(filter_raw)
         else:
             filters = filter_raw
         return filters
 
     def update_query(self, query, f, term=None, raw=False):
-        if not term:
+        if term is None:
             return query
 
         if not raw and f not in self.nested_fields and f != 'ids':

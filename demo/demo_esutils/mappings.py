@@ -11,6 +11,9 @@ from demo_esutils.models import Article
 
 
 ARTICLE_MAPPING = {
+    'pk': {
+        'type': 'integer'
+    },
     # author
     'author.username': {
         'type': 'string',
@@ -44,14 +47,19 @@ ARTICLE_MAPPING = {
     },
     # status
     'status': {
-        'type': 'string',
+        'type': 'integer',
     },
+    'contributors': {
+        'type': 'nested',
+        'properties': {
+            'username': {'type': 'string'},
+            'id': {'type': 'string'}
+        }
+    }
 }
 
 
 class ArticleMappingType(SearchMappingType):
-
-    id_field = 'uuid'
 
     @classmethod
     def get_model(cls):
@@ -60,11 +68,6 @@ class ArticleMappingType(SearchMappingType):
     @classmethod
     def get_field_mapping(cls):
         return ARTICLE_MAPPING
-
-    @classmethod
-    def get_object_by_id(cls, obj_id):
-        kwargs = {cls.id_field: UUID(obj_id)}
-        return cls.get_model().objects.get(**kwargs)
 
     def get_object(self):
         return ArticleMappingType.get_object_by_id(self._id)

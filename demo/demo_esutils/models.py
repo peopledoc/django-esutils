@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.timezone import now
 
 from django_esutils.models import ESManager
 
 from uuidfield import UUIDField
+
+
+class User(AbstractUser):
+    uuid = UUIDField(auto=True, hyphenate=True)
 
 
 class Category(models.Model):
@@ -22,11 +27,13 @@ ARTICLE_STATUSES = (
 
 class Article(models.Model):
 
-    uuid = UUIDField(auto=True, primary_key=True, hyphenate=True)
+    uuid = UUIDField(auto=True, hyphenate=True)
 
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(User, related_name='author')
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    contributors = models.ManyToManyField(User, related_name='contributors')
+
+    created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(auto_now=True)
 
     category = models.ForeignKey(Category, blank=True, null=True)
@@ -34,8 +41,7 @@ class Article(models.Model):
     subject = models.CharField(max_length=256)
     content = models.TextField(blank=True, default='')
 
-    status = models.CharField(max_length=1,
-                              choices=ARTICLE_STATUSES,
-                              default=0)
+    status = models.IntegerField(choices=ARTICLE_STATUSES,
+                                 default=0)
 
     objects = ESManager()

@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     'django_esutils',
     # for testing
     'demo_esutils',
+    'freezegun',
 ]
 
 # Databases.
@@ -43,6 +44,8 @@ NOSE_ARGS = [
 PASSWORD_HASHERS = (
     'django_ticketoffice.utils.PlainPasswordHasher',
 )
+
+AUTH_USER_MODEL = 'demo_esutils.User'
 
 # Specific test settings - do not delay
 CELERY_ALWAYS_EAGER = True
@@ -121,8 +124,12 @@ ES_DOC_TYPES = [
 
 ES_SOURCE_ENABLED = True
 
+TIME_ZONE = 'Europe/Paris'
+
+# If you set this to False, Django will not use timezone-aware datetimes.
+USE_TZ = True
+
 try:
     from local_settings import *
 except ImportError:
     pass
-
