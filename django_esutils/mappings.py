@@ -1,6 +1,8 @@
 """Base mapping module for easier specific usage."""
 from django.conf import settings
 
+from elasticsearch.exceptions import NotFoundError
+
 from elasticutils.contrib.django import S as _S
 from elasticutils.contrib.django import MappingType
 from elasticutils.contrib.django import Indexable
@@ -214,7 +216,10 @@ class SearchMappingType(MappingType, Indexable):
 
         # delete previous mapping if specified
         if delete_previous_mapping:
-            es.indices.delete_mapping(index, doc_type)
+            try:
+                es.indices.delete_mapping(index, doc_type)
+            except NotFoundError:
+                pass
 
         # update mapping if needed
         es.indices.put_mapping(doc_type, {
