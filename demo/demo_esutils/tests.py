@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 from django.utils.timezone import get_current_timezone
 from django.utils.timezone import make_aware
 
@@ -12,6 +13,7 @@ from demo_esutils.models import Category
 from demo_esutils.models import Article
 from demo_esutils.models import User
 from demo_esutils.mappings import ArticleMappingType as M
+from demo_esutils.views import ArticleListView
 from django_esutils.filters import ElasticutilsFilterSet
 from django_esutils.filters import ElasticutilsFilterBackend
 
@@ -20,6 +22,8 @@ class BaseTest(TestCase):
     fixtures = ['test_data']
 
     def setUp(self):
+        super(BaseTest, self).setUp()
+
         self.louise = User.objects.get(pk=2)
         self.florent = User.objects.get(pk=1)
         self. search_fields = ['author.username',
@@ -440,3 +444,12 @@ class FilterTestCase(BaseTest):
         # TODO
 
     """
+
+
+class ViewBackendTestCase(BaseTest):
+
+    def test_all_view(self):
+        response = self.client.get(reverse('rest_article_list')+'?q=amaz')
+        self.assertEqual(len(response.data), 1)
+        response = self.client.get(reverse('s_rest_list')+'?trololo=amaz')  # noqa
+        self.assertEqual(len(response.data), 1)

@@ -24,7 +24,7 @@ DATABASES = {
 }
 
 # URL configuration.
-ROOT_URLCONF = '{package}.urls'.format(package=__package__)
+ROOT_URLCONF = 'demo_esutils.urls'
 
 # Fake secret key.
 SECRET_KEY = 'Fake secret.'
