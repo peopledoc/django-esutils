@@ -30,7 +30,10 @@ class BaseTest(TestCase):
                                'subject',
                                'content',
                                'status',
-                               'contributors']
+                               'contributors',
+                               'q',
+                               's',
+                               'trololo']
         self.mapping_type = M
         M.update_mapping()
         M.run_index_all()
@@ -179,7 +182,6 @@ class MappingTestCase(BaseTest):
 
 
 class FilterTestCase(BaseTest):
-    fixtures = ['test_data']
 
     def test_filter_term_string(self):
         search_terms = {'subject': 'amazing'}
@@ -392,6 +394,46 @@ class FilterTestCase(BaseTest):
                                            default_action=None)
 
         self.assertEqual(filter_set.qs.count(), 2)
+
+    def test_filter_all(self):
+
+        search_terms = {'q': 'amaz'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(filter_set.qs.count(), 1)
+
+        search_terms = {'s': 'amaz'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None,
+                                           all_filter='s')
+
+        query = filter_set.qs
+        self.assertEqual(filter_set.qs.count(), 1)
+
+        search_terms = {'trololo': 'amaz'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None,
+                                           all_filter='trololo')
+
+        query = filter_set.qs
+        self.assertEqual(filter_set.qs.count(), 1)
 
     """
     def test_filter_distance(self):

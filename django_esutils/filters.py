@@ -20,11 +20,13 @@ class ElasticutilsFilterSet(object):
 
     def __init__(self, search_fields=None, search_actions=None,
                  search_terms=None, mapping_type=None, queryset=None,
-                 default_action=''):
+                 default_action='', all_filter='q', prefix_fields=None):
 
         self.search_fields = search_fields or []
         self.search_actions = search_actions or {}
         self.search_terms = search_terms or {}
+        self.all_filter = all_filter
+        self.prefix_fields = prefix_fields or []
 
         self.mapping_type = mapping_type
         self.nested_fields = self.mapping_type.get_nested_fields()
@@ -48,6 +50,10 @@ class ElasticutilsFilterSet(object):
         # Available actions are : startswith, prefix, in, range and distance
 
         action = self.search_actions.get(f, self.default_action)
+
+        if f == '_all' or not action and f in self.prefix_fields:
+            action = 'prefix'
+
         field_action = '{0}__{1}'.format(f, action) if action else f
         return F(**{field_action: term})
 
@@ -92,6 +98,8 @@ class ElasticutilsFilterSet(object):
             return query
 
         if not raw and f not in self.nested_fields and f != 'ids':
+            if f == self.all_filter:
+                return query.filter(self.get_filter('_all', term))
             return query.filter(self.get_filter(f, term))
 
         elif raw and f in self.nested_fields:
@@ -115,7 +123,6 @@ class ElasticutilsFilterSet(object):
 
         if query is None:
             query = self.mapping_type.query()
-
         for f in self.search_fields:
             term = self.search_terms.get(f)
             query = self.update_query(query, f, term)
@@ -168,8 +175,11 @@ class ElasticutilsFilterBackend(SearchFilter):
 
     def get_search_keys(self, view, queryset=None):
         search_keys = getattr(view, 'search_fields', [])
-        if 'q' not in search_keys:
-            search_keys.append('q')
+        all_filter = getattr(view, 'all_filter', 'q')
+
+        if all_filter not in search_keys:
+            search_keys.append(all_filter)
+
         if 'ids' not in search_keys:
             search_keys.append('ids')
         return search_keys
@@ -224,6 +234,8 @@ class ElasticutilsFilterBackend(SearchFilter):
         search_terms = self.get_search_terms(request, view, queryset)
         search_actions = getattr(view, 'search_actions', None)
         search_fields = getattr(view, 'search_fields', search_terms.keys())
+        all_filter = getattr(view, 'all_filter', 'q')
+        prefix_fields = getattr(view, 'prefix_fields', None)
 
         mapping_type = getattr(view, 'mapping_type', None)
 
@@ -233,4 +245,6 @@ class ElasticutilsFilterBackend(SearchFilter):
                             search_actions=search_actions,
                             search_terms=search_terms,
                             mapping_type=mapping_type,
-                            queryset=queryset).qs
+                            queryset=queryset,
+                            all_filter=all_filter,
+                            prefix_fields=prefix_fields).qs
