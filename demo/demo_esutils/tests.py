@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 from django.utils.timezone import get_current_timezone
 from django.utils.timezone import make_aware
 
@@ -12,6 +13,7 @@ from demo_esutils.models import Category
 from demo_esutils.models import Article
 from demo_esutils.models import User
 from demo_esutils.mappings import ArticleMappingType as M
+from demo_esutils.views import ArticleListView
 from django_esutils.filters import ElasticutilsFilterSet
 from django_esutils.filters import ElasticutilsFilterBackend
 
@@ -20,6 +22,8 @@ class BaseTest(TestCase):
     fixtures = ['test_data']
 
     def setUp(self):
+        super(BaseTest, self).setUp()
+
         self.louise = User.objects.get(pk=2)
         self.florent = User.objects.get(pk=1)
         self. search_fields = ['author.username',
@@ -30,7 +34,10 @@ class BaseTest(TestCase):
                                'subject',
                                'content',
                                'status',
-                               'contributors']
+                               'contributors',
+                               'q',
+                               's',
+                               'trololo']
         self.mapping_type = M
         M.update_mapping()
         M.run_index_all()
@@ -179,7 +186,6 @@ class MappingTestCase(BaseTest):
 
 
 class FilterTestCase(BaseTest):
-    fixtures = ['test_data']
 
     def test_filter_term_string(self):
         search_terms = {'subject': 'amazing'}
@@ -393,8 +399,57 @@ class FilterTestCase(BaseTest):
 
         self.assertEqual(filter_set.qs.count(), 2)
 
+    def test_filter_all(self):
+
+        search_terms = {'q': 'amaz'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(filter_set.qs.count(), 1)
+
+        search_terms = {'s': 'amaz'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None,
+                                           all_filter='s')
+
+        query = filter_set.qs
+        self.assertEqual(filter_set.qs.count(), 1)
+
+        search_terms = {'trololo': 'amaz'}
+
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None,
+                                           all_filter='trololo')
+
+        query = filter_set.qs
+        self.assertEqual(filter_set.qs.count(), 1)
+
     """
     def test_filter_distance(self):
         # TODO
 
     """
+
+
+class ViewBackendTestCase(BaseTest):
+
+    def test_all_view(self):
+        response = self.client.get(reverse('rest_article_list')+'?q=amaz')
+        self.assertEqual(len(response.data), 1)
+        response = self.client.get(reverse('s_rest_list')+'?trololo=amaz')  # noqa
+        self.assertEqual(len(response.data), 1)
