@@ -30,6 +30,8 @@ class ElasticutilsFilterSet(object):
 
         self.mapping_type = mapping_type
         self.nested_fields = self.mapping_type.get_nested_fields()
+
+        self.raw_fields = [self.all_filter, 'ids'] + self.nested_fields.keys()
         self.queryset = queryset
 
         self.default_action = default_action
@@ -51,7 +53,7 @@ class ElasticutilsFilterSet(object):
 
         action = self.search_actions.get(f, self.default_action)
 
-        if f == '_all' or not action and f in self.prefix_fields:
+        if not action and f in self.prefix_fields:
             action = 'prefix'
 
         field_action = '{0}__{1}'.format(f, action) if action else f
@@ -80,6 +82,22 @@ class ElasticutilsFilterSet(object):
             }
         }
 
+    def get_filter_all(self, value):
+        return {
+            'or': [
+                {
+                    'term': {
+                        '_all': value
+                    }
+                },
+                {
+                    'prefix': {
+                        '_all': value
+                    }
+                }
+            ]
+        }
+
     def build_complete_filter_raw(self, search, filter_raw):
         filters = {}
         if 'filter' in search:
@@ -97,9 +115,7 @@ class ElasticutilsFilterSet(object):
         if term is None:
             return query
 
-        if not raw and f not in self.nested_fields and f != 'ids':
-            if f == self.all_filter:
-                return query.filter(self.get_filter('_all', term))
+        if not raw and f not in self.raw_fields:
             return query.filter(self.get_filter(f, term))
 
         elif raw and f in self.nested_fields:
@@ -115,6 +131,12 @@ class ElasticutilsFilterSet(object):
                 self.get_filter_ids(term))
             query = query.filter_raw(filters)
 
+        elif raw and f == self.all_filter:
+            filters = self.build_complete_filter_raw(
+                query.build_search(),
+                self.get_filter_all(term))
+            query = query.filter_raw(filters)
+
         return query
 
     @property
@@ -127,14 +149,12 @@ class ElasticutilsFilterSet(object):
             term = self.search_terms.get(f)
             query = self.update_query(query, f, term)
 
-        for f in self.nested_fields:
+        for f in self.raw_fields:
             term = self.search_terms.get(f)
 
             query = self.update_query(query, f, term, raw=True)
 
-        id_list = self.search_terms.get('ids')
-
-        return self.update_query(query, 'ids', id_list, raw=True)
+        return query
 
     @property
     def count(self):

@@ -453,3 +453,7 @@ class ViewBackendTestCase(BaseTest):
         self.assertEqual(len(response.data), 1)
         response = self.client.get(reverse('s_rest_list')+'?trololo=amaz')  # noqa
         self.assertEqual(len(response.data), 1)
+
+    def test_all_exact_word(self):
+        response = self.client.get(reverse('rest_article_list')+'?q=amazing')
+        self.assertEqual(len(response.data), 1)
