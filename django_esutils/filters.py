@@ -50,7 +50,6 @@ class ElasticutilsFilterSet(object):
         # Action must be either None or one that can be handled by Elasticutils
         # According to Elasticutils
         # Available actions are : startswith, prefix, in, range and distance
-
         action = self.search_actions.get(f, self.default_action)
 
         if not action and f in self.prefix_fields:
@@ -87,12 +86,12 @@ class ElasticutilsFilterSet(object):
             'or': [
                 {
                     'term': {
-                        '_all': value
+                        '_all': value.lower()
                     }
                 },
                 {
                     'prefix': {
-                        '_all': value
+                        '_all': value.lower()
                     }
                 }
             ]
@@ -136,7 +135,6 @@ class ElasticutilsFilterSet(object):
                 query.build_search(),
                 self.get_filter_all(term))
             query = query.filter_raw(filters)
-
         return query
 
     @property
@@ -253,6 +251,7 @@ class ElasticutilsFilterBackend(SearchFilter):
 
         search_terms = self.get_search_terms(request, view, queryset)
         search_actions = getattr(view, 'search_actions', None)
+
         search_fields = getattr(view, 'search_fields', search_terms.keys())
         all_filter = getattr(view, 'all_filter', 'q')
         prefix_fields = getattr(view, 'prefix_fields', None)
