@@ -3,7 +3,7 @@ flake8
 django-nose
 freezegun
 rednose
-djangorestframework
+djangorestframework<3.0.0
 -e git+https://github.com/novapost/elasticutils.git@make-id_field-customizable#egg=elasticutils
 -e ./
 -e ./demo/
