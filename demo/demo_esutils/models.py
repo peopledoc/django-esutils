@@ -5,11 +5,9 @@ from django.utils.timezone import now
 
 from django_esutils.models import ESManager
 
-from uuidfield import UUIDField
-
 
 class User(AbstractUser):
-    uuid = UUIDField(auto=True, hyphenate=True)
+    language = models.CharField(max_length=10, default='fr')
 
 
 class Category(models.Model):
@@ -26,8 +24,6 @@ ARTICLE_STATUSES = (
 
 
 class Article(models.Model):
-
-    uuid = UUIDField(auto=True, hyphenate=True)
 
     author = models.ForeignKey(User, related_name='author')
 

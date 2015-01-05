@@ -15,7 +15,6 @@ REQUIREMENTS = [
     'celery',
     'django<1.7',
     'django-esutils',
-    'django-uuidfield',
 ]
 ENTRY_POINTS = {
     'console_scripts': ['demo_esutils = demo_esutils.manage:main'],

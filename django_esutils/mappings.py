@@ -44,7 +44,7 @@ class SearchMappingType(MappingType, Indexable):
 
     """
 
-    id_field = 'pk'
+    id_field = 'id'
     _nested_fields = None
     rel_sep = '.'
 
@@ -230,7 +230,7 @@ class SearchMappingType(MappingType, Indexable):
     def run_index(cls, ids):
         if not ids:
             return
-        tasks.index_objects.delay(cls, ids, id_field=cls.id_field)
+        tasks.index_objects.delay(cls, ids)
 
     @classmethod
     def run_index_all(cls):

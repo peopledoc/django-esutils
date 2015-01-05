@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from uuid import UUID
-
 from django.db.models.signals import post_save
 from django.db.models.signals import post_delete
 
@@ -11,7 +9,7 @@ from demo_esutils.models import Article
 
 
 ARTICLE_MAPPING = {
-    'pk': {
+    'id': {
         'type': 'integer'
     },
     # author
