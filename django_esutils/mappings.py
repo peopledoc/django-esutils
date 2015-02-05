@@ -88,7 +88,7 @@ class SearchMappingType(MappingType, Indexable):
         if cls._nested_fields is None:
             cls._nested_fields = {}
             for k, v in cls.get_field_mapping().items():
-                if not v.get('type') in ['nested', 'object']:
+                if not v.get('type') == 'nested':
                     continue
                 cls._nested_fields[k] = v.get('properties', {}).keys()
 
@@ -179,7 +179,7 @@ class SearchMappingType(MappingType, Indexable):
                     doc[k] = {}
 
                     for k_field in cls.get_field_mapping()[k]['properties']:
-                        doc[k][k_field] = cls.serialize(foreign_obj, k_field)
+                        doc[k][k_field] = cls.serialize_field(foreign_obj, k_field)  # noqa
 
             if doc[k].__class__.__name__ in ['ManyRelatedManager',
                                              'RelatedManager']:

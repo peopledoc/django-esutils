@@ -58,21 +58,35 @@ class ElasticutilsFilterSet(object):
         field_action = '{0}__{1}'.format(f, action) if action else f
         return F(**{field_action: term})
 
-    def _get_filter_nested_item(self, f, term):
+    def _get_filter_nested_item(self, f, term, action='or'):
+
+        if not term:
+            return {
+                'not': {
+                    'nested': {
+                        'path': f,
+                        'filter': {
+                            'match_all': {}
+                        }
+                    }
+                }
+            }
 
         fields = self.nested_fields.get(f)
-
         return {
             'nested': {
                 'path': f,
                 'filter': {
-                    'or': [_F(f, nf, term) for nf in fields]
+                    action: [_F(f, nf, term) for nf in fields]
                 }
             }
         }
 
     def get_filter_nested(self, f, terms):
-        return [self._get_filter_nested_item(f, t) for t in terms if t != '']
+        if terms:
+            return [self._get_filter_nested_item(f, t) for t in terms if t != '']  # noqa
+
+        return [self._get_filter_nested_item(f, terms)]
 
     def get_filter_ids(self, values):
         return {
@@ -111,9 +125,6 @@ class ElasticutilsFilterSet(object):
         return filters
 
     def update_query(self, query, f, term=None, raw=False):
-        if term is None:
-            return query
-
         if not raw and f not in self.raw_fields:
             return query.filter(self.get_filter(f, term))
 
@@ -143,11 +154,18 @@ class ElasticutilsFilterSet(object):
 
         if query is None:
             query = self.mapping_type.query()
+
         for f in self.search_fields:
+            if f not in self.search_terms.keys():
+                continue
+
             term = self.search_terms.get(f)
             query = self.update_query(query, f, term)
 
         for f in self.raw_fields:
+            if f not in self.search_terms.keys():
+                continue
+
             term = self.search_terms.get(f)
 
             query = self.update_query(query, f, term, raw=True)
@@ -230,21 +248,25 @@ class ElasticutilsFilterBackend(SearchFilter):
         for s_key in search_keys:
             # no value found at start
             value = None
+            found = False
             # get value or valuelist
             for key in params.keys():
                 # ex.: {'tag': 'yo'}
                 if key == s_key:
+                    found = True
                     value = params.get(key)
                     break
                 # ex.: {'tags[]': [1, 2]}
                 if key == '{0}[]'.format(s_key):
+                    found = True
                     value = params.getlist(key)
                     break
             # nothing to search
-            if not value:
+            if not value and not found:
                 continue
             # update search values
             search_terms[s_key] = value
+
         return search_terms
 
     def filter_queryset(self, request, queryset, view):
