@@ -35,6 +35,7 @@ class BaseTest(TestCase):
                                'content',
                                'status',
                                'contributors',
+                               'library',
                                'q',
                                's',
                                'trololo']
@@ -179,11 +180,6 @@ class MappingTestCase(BaseTest):
 
         self.assertEqual(M.query(subject__wildcard='a*ing').count(), 1)
 
-    """
-    def test_query_distance(self):
-        # TODO
-    """
-
 
 class FilterTestCase(BaseTest):
 
@@ -279,6 +275,18 @@ class FilterTestCase(BaseTest):
         query = filter_set.qs
         self.assertEqual(query.count(), 1)
 
+    def test_filter_object(self):
+        search_terms = {'library': ['library']}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 2)
+
     def test_filter_ids(self):
         search_terms = {'ids': [1, 2]}
         filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
@@ -293,6 +301,60 @@ class FilterTestCase(BaseTest):
 
         ids_filter = query.build_search()['filter']
         self.assertEqual(ids_filter, filter_set.get_filter_ids([1, 2]))
+
+    def test_filter_missing(self):
+
+        search_terms = {'contributors': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 1)
+
+        search_terms = {'library': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 2)
+
+        search_terms = {'category.name': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 0)
+
+        article = Article()
+        article.author = self.louise
+        article.content = 'yo'
+        article.subject = 'Article without cathegory'
+        article.save()
+        # refresh index
+        M.refresh_index()
+
+        search_terms = {'category.name': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 1)
 
     def test_filter_multiple_fields(self):
         search_terms = {'ids': [1, 2],

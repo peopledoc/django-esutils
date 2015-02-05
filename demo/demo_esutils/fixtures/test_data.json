@@ -95,6 +95,22 @@
   }
 },
 {
+  "pk": 1,
+  "model": "demo_esutils.library",
+  "fields": {
+    "name": "my library 1",
+    "number_of_books": 12
+  }
+},
+{
+  "pk": 2,
+  "model": "demo_esutils.library",
+  "fields": {
+    "name": "my library 2",
+    "number_of_books": 6
+  }
+},
+{
 	"pk": 1,
   "model": "demo_esutils.article",
   "fields": {
@@ -105,7 +121,8 @@
     "content": "My content 1",
     "contributors": [1, 2],
     "status": 0,
-    "author": 1
+    "author": 1,
+    "library": 1
   }
 },
 {
@@ -133,7 +150,8 @@
     "content": "yo",
     "contributors": [1, 4],
     "status": 2,
-    "author": 2
+    "author": 2,
+    "library": 2
   }
 },
 {

@@ -53,6 +53,14 @@ ARTICLE_MAPPING = {
             'username': {'type': 'string'},
             'id': {'type': 'string'}
         }
+    },
+    'library': {
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'id': {'type': 'string'},
+            'number_of_books': {'type': 'string'}
+        }
     }
 }
 
