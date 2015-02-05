@@ -36,6 +36,8 @@ class BaseTest(TestCase):
                                'status',
                                'contributors',
                                'library',
+                               'library.name',
+                               'library.number_of_books',
                                'q',
                                's',
                                'trololo']
@@ -275,18 +277,6 @@ class FilterTestCase(BaseTest):
         query = filter_set.qs
         self.assertEqual(query.count(), 1)
 
-    def test_filter_object(self):
-        search_terms = {'library': ['library']}
-        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
-                                           search_actions=None,
-                                           search_terms=search_terms,
-                                           mapping_type=self.mapping_type,
-                                           queryset=M.query(),
-                                           default_action=None)
-
-        query = filter_set.qs
-        self.assertEqual(query.count(), 2)
-
     def test_filter_ids(self):
         search_terms = {'ids': [1, 2]}
         filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
@@ -509,6 +499,13 @@ class FilterTestCase(BaseTest):
 
 
 class ViewBackendTestCase(BaseTest):
+
+    def test_filter_on_inner_object(self):
+        response = self.client.get(reverse('rest_article_list')+'?library.name=library')  # noqa
+        self.assertEqual(len(response.data), 2)
+
+        response = self.client.get(reverse('rest_article_list')+'?library.id=1')  # noqa
+        self.assertEqual(len(response.data), 1)
 
     def test_all_view(self):
         response = self.client.get(reverse('rest_article_list')+'?q=amaz')

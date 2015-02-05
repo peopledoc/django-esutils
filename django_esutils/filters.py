@@ -30,6 +30,7 @@ class ElasticutilsFilterSet(object):
 
         self.mapping_type = mapping_type
         self.nested_fields = self.mapping_type.get_nested_fields()
+        self.object_fields = self.mapping_type.get_object_fields()
 
         self.raw_fields = [self.all_filter, 'ids'] + self.nested_fields.keys()
         self.queryset = queryset
@@ -212,12 +213,22 @@ class ElasticutilsFilterBackend(SearchFilter):
     def get_search_keys(self, view, queryset=None):
         search_keys = getattr(view, 'search_fields', [])
         all_filter = getattr(view, 'all_filter', 'q')
+        mapping_type = getattr(view, 'mapping_type', None)
+        object_fields = mapping_type.get_object_fields()
 
         if all_filter not in search_keys:
             search_keys.append(all_filter)
 
         if 'ids' not in search_keys:
             search_keys.append('ids')
+
+        # append inner object relations
+        for key, fields in object_fields.items():
+            for f in fields:
+                s_key = '{0}.{1}'.format(key, f)
+                if s_key not in search_keys:
+                    search_keys.append(s_key)
+
         return search_keys
 
     def split_query_str(self, query_str):

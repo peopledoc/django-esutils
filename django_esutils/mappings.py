@@ -98,6 +98,21 @@ class SearchMappingType(MappingType, Indexable):
             else cls._nested_fields
 
     @classmethod
+    def get_object_fields(cls, field=None):
+        # not set already
+        if cls._object_fields is None:
+            cls._object_fields = {}
+            for k, v in cls.get_field_mapping().items():
+                if not v.get('type') == 'object':
+                    continue
+                cls._object_fields[k] = v.get('properties', {}).keys()
+
+        # returns object fields of a field if field param is passed or all the
+        # nested fields dict.
+        return cls._object_fields[field] if field in cls._object_fields \
+            else cls._object_fields
+
+    @classmethod
     def get_mapping(cls):
         """Returns ES mapping spec including get_field_mapping result."""
         return {
