@@ -184,21 +184,21 @@ class SearchMappingType(MappingType, Indexable):
             if doc[k] and k == cls.id_field:
                 doc[k] = str(doc[k])
 
+            if doc[k].__class__.__name__ in ['ManyRelatedManager',
+                                             'RelatedManager']:
+                doc[k] = cls.flat(k, doc[k])
+                continue
+
             if model_k in obj._meta.get_all_field_names() and doc[k]:
                 field_type = obj._meta.get_field(model_k).get_internal_type()
 
                 if field_type == 'ForeignKey' and \
                    'properties' in cls.get_field_mapping()[k]:
-
                     foreign_obj = doc[k]
                     doc[k] = {}
 
                     for k_field in cls.get_field_mapping()[k]['properties']:
-                        doc[k][k_field] = cls.serialize_field(foreign_obj, k_field)  # noqa
-
-            if doc[k].__class__.__name__ in ['ManyRelatedManager',
-                                             'RelatedManager']:
-                doc[k] = cls.flat(k, doc[k])
+                        k_1, doc[k][k_field] = cls.serialize_field(foreign_obj, k_field)  # noqa
 
         return doc
 

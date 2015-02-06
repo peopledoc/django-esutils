@@ -57,11 +57,14 @@ class ElasticutilsFilterSet(object):
             action = 'prefix'
 
         field_action = '{0}__{1}'.format(f, action) if action else f
+
+        if term == '':
+            term = None
         return F(**{field_action: term})
 
     def _get_filter_nested_item(self, f, term, action='or'):
 
-        if not term:
+        if not term or term == '':
             return {
                 'not': {
                     'nested': {
@@ -85,7 +88,7 @@ class ElasticutilsFilterSet(object):
 
     def get_filter_nested(self, f, terms):
         if terms:
-            return [self._get_filter_nested_item(f, t) for t in terms if t != '']  # noqa
+            return [self._get_filter_nested_item(f, t) for t in terms]  # noqa
 
         return [self._get_filter_nested_item(f, terms)]
 
@@ -276,6 +279,7 @@ class ElasticutilsFilterBackend(SearchFilter):
             if not value and not found:
                 continue
             # update search values
+
             search_terms[s_key] = value
 
         return search_terms

@@ -507,6 +507,10 @@ class ViewBackendTestCase(BaseTest):
         response = self.client.get(reverse('rest_article_list')+'?library.id=1')  # noqa
         self.assertEqual(len(response.data), 1)
 
+    def test_missing(self):
+        response = self.client.get(reverse('rest_article_list')+'?contributors[]=')  # noqa
+        self.assertEqual(len(response.data), 1)
+
     def test_all_view(self):
         response = self.client.get(reverse('rest_article_list')+'?q=amaz')
         self.assertEqual(len(response.data), 1)
