@@ -76,7 +76,20 @@ class ElasticutilsFilterSet(object):
                 }
             }
 
-        fields = self.nested_fields.get(f)
+        fields = list(self.nested_fields.get(f))
+
+        is_int = True
+        try:
+            int(term)
+        except:
+            is_int = False
+
+        if not is_int:
+            mapping_fields = self.mapping_type.get_field_mapping()
+            for nf in fields:
+                if mapping_fields[f]['properties'][nf]['type'] == 'integer':
+                    fields.remove(nf)
+
         return {
             'nested': {
                 'path': f,
