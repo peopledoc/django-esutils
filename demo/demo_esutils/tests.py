@@ -28,7 +28,7 @@ class BaseTest(TestCase):
         self.florent = User.objects.get(pk=1)
         self. search_fields = ['author.username',
                                'author.email',
-                               'category_id',
+                               'category.id',
                                'category.name',
                                'created_at',
                                'subject',

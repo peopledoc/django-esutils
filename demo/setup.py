@@ -13,7 +13,7 @@ VERSION = open(os.path.join(os.path.dirname(here), 'VERSION')).read().strip()
 PACKAGES = ['demo_esutils']
 REQUIREMENTS = [
     'celery',
-    'django<1.7',
+    'django',
     'django-esutils',
 ]
 ENTRY_POINTS = {

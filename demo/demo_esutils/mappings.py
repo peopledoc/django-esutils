@@ -29,7 +29,7 @@ ARTICLE_MAPPING = {
         'type': 'date',
     },
     # category
-    'category_id': {
+    'category.id': {
         'type': 'integer',
     },
     'category.name': {
