@@ -58,12 +58,15 @@ class ElasticutilsFilterSet(object):
 
         field_action = '{0}__{1}'.format(f, action) if action else f
 
+        # If term is an empty string, we are looking for a missing relation
         if term == '':
             term = None
         return F(**{field_action: term})
 
     def _get_filter_nested_item(self, f, term, action='or'):
 
+        # The following is the research for missing nested relations
+        # Like looking for a library (object) that has no books (nested)
         if not term or term == '':
             return {
                 'not': {
@@ -238,7 +241,8 @@ class ElasticutilsFilterBackend(SearchFilter):
         if 'ids' not in search_keys:
             search_keys.append('ids')
 
-        # append inner object relations
+        # For object type, you can filter on anny inner relation
+        # this code appends the inner relations to your search keys
         for key, fields in object_fields.items():
             for f in fields:
                 s_key = '{0}.{1}'.format(key, f)
@@ -274,6 +278,8 @@ class ElasticutilsFilterBackend(SearchFilter):
 
         for s_key in search_keys:
             # no value found at start
+            # A value can be None and found in the query params
+            # which means we search for the missing fields
             value = None
             found = False
             # get value or valuelist
@@ -317,69 +323,3 @@ class ElasticutilsFilterBackend(SearchFilter):
                             queryset=queryset,
                             all_filter=all_filter,
                             prefix_fields=prefix_fields).qs
-
-
-"""class ESBaseOrderingFilter(object):
-
-    ordering_param = getattr(settings, 'ES_ORDERING_PARAM', 'order')
-    ordering_fields = None
-
-    def remove_invalid_fields(self, queryset, ordering, view):
-        # valid field are the one in the
-        valid_fields = getattr(view, 'ordering_fields', self.ordering_fields)
-
-        if valid_fields is None:
-            # Default to allowing filtering on serializer fields
-            mapping_type = getattr(view, 'mapping_type', None)
-            if mapping_type is None:
-                msg = ("Cannot use %s on a view which does not have either a "
-                       "'mapping_type' or 'ordering_fields' attribute.")
-                raise ImproperlyConfigured(msg % self.__class__.__name__)
-            valid_fields = mapping_type.get_field_mapping().keys()
-
-        elif valid_fields == '__all__':
-            # View explicitly allows filtering on any model field
-            valid_fields = mapping_type.get_field_mapping().keys()
-        return [term for term in ordering if term.lstrip('-') in valid_fields]
-
-class ESDefaultOrderingFilter(ESBaseOrderingFilter):
-
-
-
-
-class ESOrderingWithSortFilter(ESBaseOrderingFilter):
-    # The URL query parameter used for the ordering.
-    ordering_param = getattr(settings, 'ES_ORDERING_PARAM', 'order')
-    sorting_param = getattr(settings, 'ES_SORTING_PARAM', 'sort')
-    ordering_fields = None
-
-    def get_ordering(self, request):
-
-        fields = request.query_params.get(self.sorting_param)
-        order = request.query_params.get(self.ordering_param)
-        if fields:
-            return [fields.strip() for fields in fields.split(',')], order  # noqa
-
-    def get_default_ordering(self, view):
-        ordering = getattr(view, 'ordering', None)
-        if isinstance(ordering, six.string_types):
-            return (ordering,)
-        return ordering
-
-
-    def filter_queryset(self, request, queryset, view):
-        ordering = self.get_ordering(request)
-
-        if ordering:
-            # Skip any incorrect parameters
-            ordering = self.remove_invalid_fields(queryset, ordering, view)
-
-        if not ordering:
-            # Use 'ordering' attribute by default
-            ordering = self.get_default_ordering(view)
-
-        if ordering:
-            return queryset.order_by(*ordering)
-
-        return queryset
-"""
