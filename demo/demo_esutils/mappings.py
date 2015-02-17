@@ -29,7 +29,7 @@ ARTICLE_MAPPING = {
         'type': 'date',
     },
     # category
-    'category_id': {
+    'category.id': {
         'type': 'integer',
     },
     'category.name': {
@@ -52,6 +52,14 @@ ARTICLE_MAPPING = {
         'properties': {
             'username': {'type': 'string'},
             'id': {'type': 'string'}
+        }
+    },
+    'library': {
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'id': {'type': 'string'},
+            'number_of_books': {'type': 'string'}
         }
     }
 }

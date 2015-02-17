@@ -1,8 +1,7 @@
-django<1.7
+django
 flake8
 django-nose
 freezegun
-rednose
 djangorestframework<3.0.0
 elasticutils
 -e ./

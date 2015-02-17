@@ -28,13 +28,16 @@ class BaseTest(TestCase):
         self.florent = User.objects.get(pk=1)
         self. search_fields = ['author.username',
                                'author.email',
-                               'category_id',
+                               'category.id',
                                'category.name',
                                'created_at',
                                'subject',
                                'content',
                                'status',
                                'contributors',
+                               'library',
+                               'library.name',
+                               'library.number_of_books',
                                'q',
                                's',
                                'trololo']
@@ -179,11 +182,6 @@ class MappingTestCase(BaseTest):
 
         self.assertEqual(M.query(subject__wildcard='a*ing').count(), 1)
 
-    """
-    def test_query_distance(self):
-        # TODO
-    """
-
 
 class FilterTestCase(BaseTest):
 
@@ -293,6 +291,60 @@ class FilterTestCase(BaseTest):
 
         ids_filter = query.build_search()['filter']
         self.assertEqual(ids_filter, filter_set.get_filter_ids([1, 2]))
+
+    def test_filter_missing(self):
+
+        search_terms = {'contributors': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 1)
+
+        search_terms = {'library': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 2)
+
+        search_terms = {'category.name': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 0)
+
+        article = Article()
+        article.author = self.louise
+        article.content = 'yo'
+        article.subject = 'Article without cathegory'
+        article.save()
+        # refresh index
+        M.refresh_index()
+
+        search_terms = {'category.name': None}
+        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
+                                           search_actions=None,
+                                           search_terms=search_terms,
+                                           mapping_type=self.mapping_type,
+                                           queryset=M.query(),
+                                           default_action=None)
+
+        query = filter_set.qs
+        self.assertEqual(query.count(), 1)
 
     def test_filter_multiple_fields(self):
         search_terms = {'ids': [1, 2],
@@ -447,6 +499,17 @@ class FilterTestCase(BaseTest):
 
 
 class ViewBackendTestCase(BaseTest):
+
+    def test_filter_on_inner_object(self):
+        response = self.client.get(reverse('rest_article_list')+'?library.name=library')  # noqa
+        self.assertEqual(len(response.data), 2)
+
+        response = self.client.get(reverse('rest_article_list')+'?library.id=1')  # noqa
+        self.assertEqual(len(response.data), 1)
+
+    def test_missing(self):
+        response = self.client.get(reverse('rest_article_list')+'?contributors[]=')  # noqa
+        self.assertEqual(len(response.data), 1)
 
     def test_all_view(self):
         response = self.client.get(reverse('rest_article_list')+'?q=amaz')

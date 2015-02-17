@@ -17,4 +17,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for m_type in AVAILABLE_MAPPING_TYPES:
-            m_type.es_index_all()
+            m_type.run_index_all()
+            m_type.refresh_index()

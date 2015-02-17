@@ -46,6 +46,7 @@ class SearchMappingType(MappingType, Indexable):
 
     id_field = 'id'
     _nested_fields = None
+    _object_fields = None
     rel_sep = '.'
 
     @classmethod
@@ -97,6 +98,21 @@ class SearchMappingType(MappingType, Indexable):
             else cls._nested_fields
 
     @classmethod
+    def get_object_fields(cls, field=None):
+        # not set already
+        if cls._object_fields is None:
+            cls._object_fields = {}
+            for k, v in cls.get_field_mapping().items():
+                if not v.get('type') == 'object':
+                    continue
+                cls._object_fields[k] = v.get('properties', {}).keys()
+
+        # returns object fields of a field if field param is passed or all the
+        # nested fields dict.
+        return cls._object_fields[field] if field in cls._object_fields \
+            else cls._object_fields
+
+    @classmethod
     def get_mapping(cls):
         """Returns ES mapping spec including get_field_mapping result."""
         return {
@@ -129,6 +145,26 @@ class SearchMappingType(MappingType, Indexable):
         return cls.get_model().objects.get(**kwargs)
 
     @classmethod
+    def serialize_field(cls, obj, k):
+        # split key if is a 2 level key or one level key, ex.:
+        #   - 'id', None if k == 'id'
+        #   - 'author', 'first_name' if k == 'author.first_name'
+        k_1, k_2 = (k, None) if cls.rel_sep not in k \
+            else k.split(cls.rel_sep)
+
+        # update the doc according splitted key, ex.: {
+        #     'id': obj.id,
+        # }
+        # ... or if is a 2 level key: {
+        #     'author.first_name': obj.author.first_name,
+        # }
+        field = getattr(obj, k_1, None)
+        if field and k_2:
+            field = getattr(field, k_2, None)
+
+        return k_1, field
+
+    @classmethod
     def extract_document(cls, obj_id, obj=None):
         """Returns json doc to index for a given pkand the current mapping."""
 
@@ -142,21 +178,7 @@ class SearchMappingType(MappingType, Indexable):
         # build doc according mapping keys and obj values
         doc = {}
         for k in mapping_keys:
-            # split key if is a 2 level key or one level key, ex.:
-            #   - 'id', None if k == 'id'
-            #   - 'author', 'first_name' if k == 'author.first_name'
-            k_1, k_2 = (k, None) if cls.rel_sep not in k \
-                else k.split(cls.rel_sep)
-
-            # update the doc according splitted key, ex.: {
-            #     'id': obj.id,
-            # }
-            # ... or if is a 2 level key: {
-            #     'author.first_name': obj.author.first_name,
-            # }
-            doc[k] = getattr(obj, k_1, None)
-            if doc[k] and k_2:
-                doc[k] = getattr(doc[k], k_2, None)
+            model_k, doc[k] = cls.serialize_field(obj, k)
 
             # ensure pk serialization
             if doc[k] and k == cls.id_field:
@@ -165,6 +187,18 @@ class SearchMappingType(MappingType, Indexable):
             if doc[k].__class__.__name__ in ['ManyRelatedManager',
                                              'RelatedManager']:
                 doc[k] = cls.flat(k, doc[k])
+                continue
+
+            if model_k in obj._meta.get_all_field_names() and doc[k]:
+                field_type = obj._meta.get_field(model_k).get_internal_type()
+
+                if field_type == 'ForeignKey' and \
+                   'properties' in cls.get_field_mapping()[k]:
+                    foreign_obj = doc[k]
+                    doc[k] = {}
+
+                    for k_field in cls.get_field_mapping()[k]['properties']:
+                        k_1, doc[k][k_field] = cls.serialize_field(foreign_obj, k_field)  # noqa
 
         return doc
 

@@ -15,6 +15,11 @@ class Category(models.Model):
     name = models.CharField(max_length=128)
 
 
+class Library(models.Model):
+    name = models.CharField(max_length=128)
+    number_of_books = models.IntegerField(default=0)
+
+
 ARTICLE_STATUSES = (
     (0, 'draft'),
     (1, 'new'),
@@ -33,6 +38,8 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     category = models.ForeignKey(Category, blank=True, null=True)
+
+    library = models.ForeignKey(Library, blank=True, null=True)
 
     subject = models.CharField(max_length=256)
     content = models.TextField(blank=True, default='')

@@ -34,7 +34,6 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--verbosity=2',
     '--nocapture',
-    '--rednose',
     '--no-path-adjustment',
     '--all-modules',
     '--cover-inclusive',
@@ -128,6 +127,14 @@ TIME_ZONE = 'Europe/Paris'
 
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
+
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware'
+)
 
 try:
     from local_settings import *

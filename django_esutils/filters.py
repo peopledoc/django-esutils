@@ -30,6 +30,7 @@ class ElasticutilsFilterSet(object):
 
         self.mapping_type = mapping_type
         self.nested_fields = self.mapping_type.get_nested_fields()
+        self.object_fields = self.mapping_type.get_object_fields()
 
         self.raw_fields = [self.all_filter, 'ids'] + self.nested_fields.keys()
         self.queryset = queryset
@@ -56,23 +57,56 @@ class ElasticutilsFilterSet(object):
             action = 'prefix'
 
         field_action = '{0}__{1}'.format(f, action) if action else f
+
+        # If term is an empty string, we are looking for a missing relation
+        if term == '':
+            term = None
         return F(**{field_action: term})
 
-    def _get_filter_nested_item(self, f, term):
+    def _get_filter_nested_item(self, f, term, action='or'):
 
-        fields = self.nested_fields.get(f)
+        # The following is the research for missing nested relations
+        # Like looking for a library (object) that has no books (nested)
+        if not term or term == '':
+            return {
+                'not': {
+                    'nested': {
+                        'path': f,
+                        'filter': {
+                            'match_all': {}
+                        }
+                    }
+                }
+            }
+
+        fields = list(self.nested_fields.get(f))
+
+        is_int = True
+        try:
+            int(term)
+        except:
+            is_int = False
+
+        if not is_int:
+            mapping_fields = self.mapping_type.get_field_mapping()
+            for nf in fields:
+                if mapping_fields[f]['properties'][nf]['type'] == 'integer':
+                    fields.remove(nf)
 
         return {
             'nested': {
                 'path': f,
                 'filter': {
-                    'or': [_F(f, nf, term) for nf in fields]
+                    action: [_F(f, nf, term) for nf in fields]
                 }
             }
         }
 
     def get_filter_nested(self, f, terms):
-        return [self._get_filter_nested_item(f, t) for t in terms if t != '']
+        if terms:
+            return [self._get_filter_nested_item(f, t) for t in terms]  # noqa
+
+        return [self._get_filter_nested_item(f, terms)]
 
     def get_filter_ids(self, values):
         return {
@@ -111,9 +145,6 @@ class ElasticutilsFilterSet(object):
         return filters
 
     def update_query(self, query, f, term=None, raw=False):
-        if term is None:
-            return query
-
         if not raw and f not in self.raw_fields:
             return query.filter(self.get_filter(f, term))
 
@@ -143,11 +174,18 @@ class ElasticutilsFilterSet(object):
 
         if query is None:
             query = self.mapping_type.query()
+
         for f in self.search_fields:
+            if f not in self.search_terms.keys():
+                continue
+
             term = self.search_terms.get(f)
             query = self.update_query(query, f, term)
 
         for f in self.raw_fields:
+            if f not in self.search_terms.keys():
+                continue
+
             term = self.search_terms.get(f)
 
             query = self.update_query(query, f, term, raw=True)
@@ -194,12 +232,23 @@ class ElasticutilsFilterBackend(SearchFilter):
     def get_search_keys(self, view, queryset=None):
         search_keys = getattr(view, 'search_fields', [])
         all_filter = getattr(view, 'all_filter', 'q')
+        mapping_type = getattr(view, 'mapping_type', None)
+        object_fields = mapping_type.get_object_fields()
 
         if all_filter not in search_keys:
             search_keys.append(all_filter)
 
         if 'ids' not in search_keys:
             search_keys.append('ids')
+
+        # For object type, you can filter on anny inner relation
+        # this code appends the inner relations to your search keys
+        for key, fields in object_fields.items():
+            for f in fields:
+                s_key = '{0}.{1}'.format(key, f)
+                if s_key not in search_keys:
+                    search_keys.append(s_key)
+
         return search_keys
 
     def split_query_str(self, query_str):
@@ -229,22 +278,29 @@ class ElasticutilsFilterBackend(SearchFilter):
 
         for s_key in search_keys:
             # no value found at start
+            # A value can be None and found in the query params
+            # which means we search for the missing fields
             value = None
+            found = False
             # get value or valuelist
             for key in params.keys():
                 # ex.: {'tag': 'yo'}
                 if key == s_key:
+                    found = True
                     value = params.get(key)
                     break
                 # ex.: {'tags[]': [1, 2]}
                 if key == '{0}[]'.format(s_key):
+                    found = True
                     value = params.getlist(key)
                     break
             # nothing to search
-            if not value:
+            if not value and not found:
                 continue
             # update search values
+
             search_terms[s_key] = value
+
         return search_terms
 
     def filter_queryset(self, request, queryset, view):

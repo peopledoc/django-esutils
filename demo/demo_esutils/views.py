@@ -46,7 +46,8 @@ class BaseArticleListView(object):
                      'subject',
                      'content',
                      'status',
-                     'contributors']
+                     'contributors',
+                     'library']
 
     def get_queryset(self):
         # detail views
