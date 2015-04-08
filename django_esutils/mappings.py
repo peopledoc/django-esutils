@@ -90,7 +90,9 @@ class SearchMappingType(MappingType, Indexable):
             for k, v in cls.get_field_mapping().items():
                 if not v.get('type') == 'nested':
                     continue
-                cls._nested_fields[k] = v.get('properties', {}).keys()
+                cls._nested_fields[k] = \
+                    [_k for _k, _v in v.get('properties', {}).items()
+                     if _v.get('type') in ['integer', 'string']]
 
         # returns nested fields of a field if field param is passed or all the
         # nested fields dict.
