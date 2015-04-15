@@ -269,9 +269,15 @@ class SearchMappingType(MappingType, Indexable):
         tasks.index_objects.delay(cls, ids)
 
     @classmethod
-    def run_index_all(cls):
-        cls.run_index(list(cls.get_model().objects.values_list(cls.id_field,
-                                                               flat=True)))
+    def run_index_all(cls, nb=1000):
+        pk = 0
+        last_pk = cls.get_model().objects.order_by('-pk')[0].pk
+        qs = cls.get_model().objects.order_by('pk')
+        while pk < last_pk:
+            ids = list(qs.filter(pk__gt=pk)[:nb].values_list(cls.id_field,
+                                                             flat=True))
+            cls.run_index(ids)
+            pk = ids[-1]
 
     @classmethod
     def run_unindex(cls, ids):
