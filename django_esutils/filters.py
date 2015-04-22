@@ -111,7 +111,7 @@ class ElasticutilsFilterSet(object):
     def get_filter_ids(self, values):
         return {
             'ids': {
-                'values': [int(i) for i in values]
+                'values': [int(i) for i in values if i and str(i).isdigit()]
             }
         }
 
