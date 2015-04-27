@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import partial
 
 from django.test import TestCase
 from django.core.urlresolvers import reverse
@@ -13,9 +14,7 @@ from demo_esutils.models import Category
 from demo_esutils.models import Article
 from demo_esutils.models import User
 from demo_esutils.mappings import ArticleMappingType as M
-from demo_esutils.views import ArticleListView
 from django_esutils.filters import ElasticutilsFilterSet
-from django_esutils.filters import ElasticutilsFilterBackend
 
 
 class BaseTest(TestCase):
@@ -278,19 +277,31 @@ class FilterTestCase(BaseTest):
         self.assertEqual(query.count(), 1)
 
     def test_filter_ids(self):
-        search_terms = {'ids': [1, 2]}
-        filter_set = ElasticutilsFilterSet(search_fields=self.search_fields,
-                                           search_actions=None,
-                                           search_terms=search_terms,
-                                           mapping_type=self.mapping_type,
-                                           queryset=M.query(),
-                                           default_action=None)
 
+        filter_set_func = partial(ElasticutilsFilterSet,
+            search_fields=self.search_fields,
+            search_actions=None,
+            mapping_type=self.mapping_type,
+            queryset=M.query(),
+            default_action=None)
+
+        filter_set = filter_set_func(search_terms={'ids': [1, 2]})
         query = filter_set.qs
         self.assertEqual(query.count(), 2)
 
         ids_filter = query.build_search()['filter']
         self.assertEqual(ids_filter, filter_set.get_filter_ids([1, 2]))
+
+        # invalid list
+        filter_set = filter_set_func(search_terms={'ids': ['']})
+        query = filter_set.qs
+        self.assertEqual(query.count(), 0)
+
+        # invalid list
+        filter_set = filter_set_func(search_terms={'ids': ['pouet']})
+        query = filter_set.qs
+        self.assertEqual(query.count(), 0)
+
 
     def test_filter_missing(self):
 
