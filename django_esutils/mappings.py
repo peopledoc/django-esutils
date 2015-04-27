@@ -269,13 +269,15 @@ class SearchMappingType(MappingType, Indexable):
         tasks.index_objects.delay(cls, ids)
 
     @classmethod
-    def run_index_all(cls, nb=1000):
+    def run_index_all(cls, number=1000, database='default'):
+        if database not in settings.DATABASES:
+            return
         pk = 0
-        last_pk = cls.get_model().objects.order_by('-pk')[0].pk
+        last_pk = cls.get_model().objects.using(database).order_by('-pk')[0].pk
         qs = cls.get_model().objects.order_by('pk')
         while pk < last_pk:
-            ids = list(qs.filter(pk__gt=pk)[:nb].values_list(cls.id_field,
-                                                             flat=True))
+            ids = list(qs.filter(pk__gt=pk)[:number].values_list(cls.id_field,
+                                                                 flat=True))
             cls.run_index(ids)
             pk = ids[-1]
 
